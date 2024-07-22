@@ -5,4 +5,90 @@ import Layout from "../layouts/Layout.astro"
 
 <Layout title="Nueva Apuesta">
     <Boton href="menu" title="regresar" color="verde" />
+    <form action="/submit-bet" method="post" class="form-apuesta">
+        <label for="deporte">Deporte:</label>
+        <select id="deporte" name="deporte" required>
+            <option value="" disabled selected>Seleccione un deporte</option>
+            <option value="baseball">Baseball</option>
+            <option value="futbol">Fútbol</option>
+            <option value="futbol-americano">Fútbol Americano</option>
+            <option value="basketball">Basketball</option>
+        </select>
+        <label for="liga">Liga:</label>
+        <input type="text" id="liga" name="liga" required>
+
+        <label for="fecha">Fecha:</label>
+        <input type="date" id="fecha" name="fecha" required>
+
+        <label for="momio">Momio:</label>
+        <input type="text" id="momio" name="momio" required>
+
+        <label for="nombre_apuesta">Nombre de la Apuesta:</label>
+        <input type="text" id="nombre_apuesta" name="nombre_apuesta" required>
+
+        <label for="tipo_apuesta">Tipoe de la Apuesta:</label>
+        <input type="text" id="tipo_apuesta" name="tipo_apuesta" required>
+
+        <label for="resultado">Resultado:</label>
+        <div class="checkbox-group">
+            <input type="checkbox" id="ganada" name="resultado" value="ganada">
+            <label for="ganada">Ganada</label>
+            <input type="checkbox" id="perdida" name="resultado" value="perdida">
+            <label for="perdida">Perdida</label>
+        </div>
+
+  
+        <button type="submit" class="submit-button">Guardar Apuesta</button>
+    </form>
+    <Boton href="menu" title="regresar" color="verde" />
 </Layout>
+<style>
+.form-apuesta {
+    display: flex;
+    flex-direction: column;
+    width: 50%;
+    margin: 0 auto;
+    border-radius: 8px;
+    background-color: var(--bg-gray);
+    padding:30px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.form-apuesta label {
+    font-size: 1rem;
+    color: var(--dark-gray);
+}
+
+.bet-form input[type="text"],
+.bet-form input[type="date"] {
+    padding: 0.5rem;
+    border: 1px solid var(--gray);
+    border-radius: 4px;
+    font-size: 1rem;
+}
+
+.checkbox-group {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.checkbox-group input[type="checkbox"] {
+    margin-right: 0.5rem;
+}
+
+.submit-button {
+    background-color: var(--primary-green);
+    color: white;
+    padding: 0.75rem;
+    border: none;
+    border-radius: 4px;
+    font-size: 1rem;
+    cursor: pointer;
+}
+
+.submit-button:hover {
+    background-color: var(--green-dark);
+}
+
+</style>

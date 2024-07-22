@@ -1,0 +1,12 @@
+---
+interface Props {
+  tipo: string;
+  id: string;
+  nombre: string;
+  descripcion: string;
+}
+const { tipo, id, nombre, descripcion } = Astro.props as Props;
+---
+
+<label for={id}>{descripcion}</label>
+<input type={tipo} id={id} name={nombre} required>
