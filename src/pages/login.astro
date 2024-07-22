@@ -1,0 +1,72 @@
+---
+import Layout  from "../layouts/Layout.astro"
+---
+
+<Layout title="login">
+    <main>
+        <section>
+            <div class="buttons">
+                <a href=".."><button class="btn">Regresar</button></a>
+            </div>
+        </section>
+        <section>
+            <article>
+                <h1>INICIA SESION</h1>
+            </article>    
+            <article>
+                <form action="IniciarSesion">
+                    <label for="usuario">USUARIO o CORREO</label>
+                    <input type="text" id="usuario" name="nombre-usuario">
+                    <label for="password"> CONTRASEÑA</label>
+                    <input type="password" id="password" name="password-usuario">
+                </form>
+            </article>
+            <article>
+                <div class="buttons"> 
+                    <a href="menu"><button class="btn"> Iniciar Sesion </button></a>
+                </div>
+            </article>
+        </section>
+    </main>
+</Layout >
+<style>
+    h1 {
+    text-align: center;
+    color: #333333;
+    margin-bottom: 2rem;
+}
+
+label {
+    display: block;
+    margin: 0.5rem 0 0.2rem 0;
+    color: #555555;
+}
+
+
+
+.buttons {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 1rem;
+}
+
+.btn {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 0.8rem 1.2rem;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.btn:hover {
+    background-color: #0056b3;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+</style>

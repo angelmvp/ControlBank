@@ -1,0 +1,36 @@
+---
+interface props{
+    href: string;
+    title: string;
+    color:string;
+}
+const{href,title,color}=Astro.props
+---
+
+<a href={href}> 
+    <button class={color}>{title}</button>
+</a>
+
+<style>
+button {
+    border: none;
+    padding: 0.8rem 1.2rem;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+.azul{
+    background-color: #007bff;
+    color: white;
+}
+.azul:hover {
+    background-color: #0056b3;
+}
+.verde{
+    background-color: var(--primary-green);
+    color: white;
+}
+.verde:hover{
+    background-color: var(--green-dark);
+}
+</style>

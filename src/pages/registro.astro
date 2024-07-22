@@ -1,0 +1,56 @@
+---
+import Boton from "../components/Boton.astro"
+import Layout from "../layouts/Layout.astro"
+---
+
+<Layout title="Registro">
+    <main>
+        <section>
+            <article class="title">
+                <h1>REGISTRATE</h1>
+            </article>    
+            <article class="form">
+                <form action="Registrar" id="form">
+                    <label for="nombre">Nombre</label>
+                    <input type="text" id="nombre" name="nombre">
+                    <label for="apellidos">Apellidos</label>
+                    <input type="text" id="apellidos" name="apellidos">
+                    <label for="correo">Correo Electrónico</label>
+                    <input type="email" id="correo" name="correo">
+                    <label for="contrasena">Contraseña</label>
+                    <input type="password" id="contrasena" name="contrasena">
+                </form>
+                <Boton href="login" title="Completar Registro" color="azul"/>
+            </article>
+        </section>
+    </main>
+    
+</Layout>
+<style>
+    #form{
+        background-color: rgb(202, 189, 189);
+        width: 50%;
+        margin:20px auto;
+        padding:25px;
+        display :flex;
+        flex-direction: column;
+        border-radius: 20px;
+    }
+    article{
+        display: flex;
+        text-align: center;
+        align-items: center;
+        align-content: center;
+        flex-direction: column;
+    }
+    .title{
+        background-color: var(--green-dark);
+        margin :15px;
+        paddin: 5px;
+        color: aliceblue;
+        display: flex;
+        align-content: center;
+        
+    }
+    
+</style>
