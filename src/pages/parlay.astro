@@ -5,4 +5,178 @@ import Layout from "../layouts/Layout.astro"
 
 <Layout title="Nuevo Parlay">
     <Boton href="menu" title="regresar" color="verde" />
+    <form id="parlay-form" action="/submit-parlay" method="post" class="form-parlay">
+        <div id="bet-forms">
+            <!-- Initial Bet Form -->
+            <div class="bet-form" data-index="1">
+                <label for="Deporte1">Deporte</label>
+                <input type="text" id="Deporte1" name="EleccionDeporte1" required>
+
+                <label for="Fecha1">Fecha de la Apuesta</label>
+                <input type="date" id="Fecha1" name="FechaApuesta1" required>
+
+                <label for="NombreApuesta1">Nombre de la Apuesta</label>
+                <input type="text" id="NombreApuesta1" name="NombreDeApuesta1" required>
+
+                <label for="TipoApuesta1">Tipo de la Apuesta</label>
+                <input type="text" id="TipoApuesta1" name="TipoDeLaApuesta1" required>
+
+                <label for="resultado1">Resultado:</label>
+                <div class="checkbox">
+                    <input type="checkbox" id="ganada1" name="resultado1" value="ganada">
+                    <label for="ganada1">Ganada</label>
+                    <input type="checkbox" id="perdida1" name="resultado1" value="perdida">
+                    <label for="perdida1">Perdida</label>
+                    <input type="checkbox" id="push1" name="resultado1" value="push">
+                    <label for="push1">Push</label>
+                </div>
+            </div>
+        </div>
+        <button type="button" id="add-bet-button" class="add-button">Agregar Apuesta</button>
+        <button type="submit" class="submit-button">Guardar Parlay</button>
+    </form>
+    <Boton href="menu" title="regresar" color="verde" />
 </Layout>
+
+<script>
+    document.getElementById('add-bet-button')?.addEventListener('click', function() {
+        const betForms = document.getElementById('bet-forms');
+        if (!betForms) return;
+
+        const betCount = betForms.getElementsByClassName('bet-form').length + 1;
+        const betForm = document.createElement('div');
+        betForm.classList.add('bet-form');
+        betForm.innerHTML = `
+            <div id="bet-forms">
+            <!-- Initial Bet Form -->
+            <div class="bet-form" data-index="1">
+                <label for="Deporte1">Deporte</label>
+                <input type="text" id="Deporte1" name="EleccionDeporte1" required>
+
+                <label for="Fecha1">Fecha de la Apuesta</label>
+                <input type="date" id="Fecha1" name="FechaApuesta1" required>
+
+                <label for="NombreApuesta1">Nombre de la Apuesta</label>
+                <input type="text" id="NombreApuesta1" name="NombreDeApuesta1" required>
+
+                <label for="TipoApuesta1">Tipo de la Apuesta</label>
+                <input type="text" id="TipoApuesta1" name="TipoDeLaApuesta1" required>
+
+                <label for="resultado1">Resultado:</label>
+                <div class="checkbox">
+                    <input type="checkbox" id="ganada1" name="resultado1" value="ganada">
+                    <label for="ganada1">Ganada</label>
+                    <input type="checkbox" id="perdida1" name="resultado1" value="perdida">
+                    <label for="perdida1">Perdida</label>
+                    <input type="checkbox" id="push1" name="resultado1" value="push">
+                    <label for="push1">Push</label>
+                </div>
+            </div>
+        </div>
+            <style>
+            .form-parlay {
+                display: flex;
+                flex-direction: column;
+                width: 50%;
+                margin: 0 auto;
+                border-radius: 8px;
+                background-color: var(--bg-gray);
+                padding: 30px;
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            }
+            .bet-form {
+                margin-bottom: 20px;
+                padding-bottom: 20px;
+                border-bottom: 1px solid var(--gray-light);
+            }
+            .bet-form label {
+                display: block;
+                margin-bottom: 5px;
+                font-weight: bold;
+            }
+            .bet-form input[type="text"],
+            .bet-form input[type="date"] {
+                width: 100%;
+                padding: 8px;
+                margin-bottom: 15px;
+                border: 1px solid var(--gray-light);
+                border-radius: 4px;
+            }
+            .checkbox {
+                display: flex;
+                gap: 1rem;
+                align-items: center;
+                margin-bottom: 15px;
+            }
+
+            .checkbox input[type="checkbox"] {
+                margin-right: 0.5rem;
+            }
+
+            </style>
+        `;
+        betForms.appendChild(betForm);
+    });
+</script>
+
+<style>
+.form-parlay {
+    display: flex;
+    flex-direction: column;
+    width: 50%;
+    margin: 0 auto;
+    border-radius: 8px;
+    background-color: var(--bg-gray);
+    padding: 30px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.bet-form {
+    margin-bottom: 20px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--gray-light);
+}
+
+.bet-form label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.bet-form input[type="text"],
+.bet-form input[type="date"] {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 15px;
+    border: 1px solid var(--gray-light);
+    border-radius: 4px;
+}
+
+.checkbox {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.checkbox input[type="checkbox"] {
+    margin-right: 0.5rem;
+}
+
+.add-button,
+.submit-button {
+    background-color: var(--primary-green);
+    color: white;
+    padding: 0.75rem;
+    border: none;
+    border-radius: 4px;
+    font-size: 1rem;
+    cursor: pointer;
+    margin-top: 20px;
+}
+
+.add-button:hover,
+.submit-button:hover {
+    background-color: var(--green-dark);
+}
+</style>

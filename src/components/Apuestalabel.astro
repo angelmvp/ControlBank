@@ -1,12 +1,53 @@
 ---
+type HTMLInputTypeAttribute = 
+  | "button"
+  | "checkbox"
+  | "color"
+  | "date"
+  | "datetime-local"
+  | "email"
+  | "file"
+  | "hidden"
+  | "image"
+  | "month"
+  | "number"
+  | "password"
+  | "radio"
+  | "range"
+  | "reset"
+  | "search"
+  | "submit"
+  | "tel"
+  | "text"
+  | "time"
+  | "url"
+  | "week";
+
 interface Props {
-  tipo: string;
+  tipo: HTMLInputTypeAttribute;
   id: string;
   nombre: string;
   descripcion: string;
 }
-const { tipo, id, nombre, descripcion } = Astro.props as Props;
+
+const { tipo, id, nombre, descripcion } = Astro.props;
+
 ---
 
 <label for={id}>{descripcion}</label>
 <input type={tipo} id={id} name={nombre} required>
+
+<style>
+label {
+    font-size: 1rem;
+    color: var(--dark-gray);
+}
+
+input {
+    padding: 5px;
+    border: 1px solid var(--gray);
+    border-radius: 4px;
+    font-size: 1rem;
+}
+
+</style>
