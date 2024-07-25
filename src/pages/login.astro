@@ -1,56 +1,61 @@
 ---
-import Layout  from "../layouts/Layout.astro"
+import Boton from "../components/Boton.astro"
+import Layout from "../layouts/Layout.astro"
+import Label from "../components/Apuestalabel.astro"
+const response = await fetch('http://localhost:4322/usuarios');
+const usuarios = await response.json();
 ---
 
 <Layout title="login">
-    <main>
-        <section>
-            <div class="buttons">
-                <a href=".."><button class="btn">Regresar</button></a>
-            </div>
-        </section>
-        <section>
-            <article>
-                <h1>INICIA SESION</h1>
-            </article>    
-            <article>
-                <form action="IniciarSesion">
-                    <label for="usuario">USUARIO o CORREO</label>
-                    <input type="text" id="usuario" name="nombre-usuario">
-                    <label for="password"> CONTRASEÑA</label>
-                    <input type="password" id="password" name="password-usuario">
-                </form>
-            </article>
-            <article>
-                <div class="buttons"> 
-                    <a href="menu"><button class="btn"> Iniciar Sesion </button></a>
-                </div>
-            </article>
-        </section>
-    </main>
-</Layout >
+  <main>
+    <section>
+      <Boton href=".." title="regresar" color="verde"/>
+    </section>
+    <section>
+      <article class="title">
+        <h1>INICIAR SESIÓN</h1>
+      </article>
+      <article class="form">
+        <form id="login-form">
+          <Label tipo="email" id="correo" nombre="correo" descripcion="Correo Electrónico" />
+          <Label tipo="password" id="contrasena" nombre="contrasena" descripcion="Contraseña" />
+          <button type="submit">Iniciar Sesión</button>
+        </form>
+      </article>
+    </section>
+    <section>
+      <p id="login-success-message" style="color: green;"></p>
+      <p id="login-error-message" style="color: red;"></p>
+    </section>
+    <h1>Lista de Usuarios</h1>
+    <ul>
+      {usuarios.map((usuario) => (
+        <li>{usuario.nombre_usuario} - {usuario.apellidos} - {usuario.correo}</li>
+      ))}
+    </ul>
+  </main>
+</Layout>
+
 <style>
-    h1 {
+  h1 {
     text-align: center;
     color: #333333;
     margin-bottom: 2rem;
-}
+  }
 
-label {
+  label {
     display: block;
     margin: 0.5rem 0 0.2rem 0;
     color: #555555;
-}
+  }
 
-
-
-.buttons {
+  .buttons {
     display: flex;
     justify-content: flex-end;
     margin-bottom: 1rem;
-}
+  }
 
-.btn {
+  .btn {
     background-color: #007bff;
     color: white;
     border: none;
@@ -58,15 +63,53 @@ label {
     border-radius: 5px;
     cursor: pointer;
     transition: background-color 0.3s ease;
-}
+  }
 
-.btn:hover {
+  .btn:hover {
     background-color: #0056b3;
-}
+  }
 
-form {
+  form {
     display: flex;
     flex-direction: column;
     align-items: center;
-}
+  }
 </style>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('login-form');
+  
+    function handleLoginFormSubmit(event) {
+      event.preventDefault();
+      const formData = new FormData(event.target);
+      const data = Object.fromEntries(formData.entries());
+  
+      fetch('http://localhost:4322/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+      })
+      .then(response => response.json())
+      .then(result => {
+        if (result.success) {
+          alert(`Bienvenido, ${result.nombre_usuario}`);
+          window.location.href = '/menu'; // Redirige a la página /menu
+        } else {
+          document.getElementById('login-error-message').textContent = result.message;
+          document.getElementById('login-success-message').textContent = '';
+        }
+      })
+      .catch((error) => {
+        console.error('Error en la solicitud:', error);
+        document.getElementById('login-error-message').textContent = 'Error interno del servidor';
+        document.getElementById('login-success-message').textContent = '';
+      });
+    }
+  
+    if (form) {
+      form.addEventListener('submit', handleLoginFormSubmit);
+    }
+  });
+</script>  

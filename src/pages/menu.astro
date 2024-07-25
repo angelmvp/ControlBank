@@ -1,6 +1,7 @@
 ---
 import Boton from "../components/Boton.astro"
 import Layout from "../layouts/Layout.astro"
+const { nombre_usuario } = Astro.props;
 ---
 
 <Layout title="Menu principal">
@@ -11,4 +12,8 @@ import Layout from "../layouts/Layout.astro"
         <Boton href="historial" title="Ver Historial" color="azul"/>
         <Boton href=".." title="regresar index" color="verde"/>
     </nav>
+    <section>
+        <h1>Bienvenido, {nombre_usuario}</h1>
+        <!-- Aquí puedes agregar el contenido del menú -->
+      </section>
 </Layout>
