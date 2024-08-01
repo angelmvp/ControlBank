@@ -6,10 +6,7 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 
 const pool = new Pool({
-    user: 'postgres',
-    host: 'localhost',
-    password: 'BD27-mVp+',
-    database: 'prueba'
+    
 });
 
 app.use(bodyParser.json());
