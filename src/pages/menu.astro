@@ -10,10 +10,20 @@ const { nombre_usuario } = Astro.props;
         <Boton href="apuesta" title="Registrar Apuesta" color="azul"/>
         <Boton href="parlay" title="Registrar Parlay" color="azul"/>
         <Boton href="historial" title="Ver Historial" color="azul"/>
-        <Boton href=".." title="regresar index" color="verde"/>
+        <Boton id="logout "href=".." title="regresar index" color="verde"/>
     </nav>
     <section>
         <h1>Bienvenido, {nombre_usuario}</h1>
         <!-- Aquí puedes agregar el contenido del menú -->
       </section>
 </Layout>
+
+
+<script>
+    document.getElementById("logout")?.addEventListener("click",()=>{
+        document.cookie='jwt=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+        document.location.href="menu"; 
+    })
+
+    
+</script>

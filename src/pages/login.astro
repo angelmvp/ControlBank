@@ -2,6 +2,7 @@
 import Boton from "../components/Boton.astro"
 import Layout from "../layouts/Layout.astro"
 import Label from "../components/Apuestalabel.astro"
+import BotonSubmit from "../components/BotonSubmit.astro";
 const response = await fetch('http://localhost:4322/usuarios');
 const usuarios = await response.json();
 ---
@@ -19,18 +20,14 @@ const usuarios = await response.json();
         <form id="login-form">
           <Label tipo="email" id="correo" nombre="correo" descripcion="Correo Electrónico" />
           <Label tipo="password" id="contrasena" nombre="contrasena" descripcion="Contraseña" />
-          <button type="submit">Iniciar Sesión</button>
+          <BotonSubmit title="Iniciar Sesion" color="azul" type="submit" />
         </form>
       </article>
-    </section>
-    <section>
-      <p id="login-success-message" style="color: green;"></p>
-      <p id="login-error-message" style="color: red;"></p>
     </section>
     <h1>Lista de Usuarios</h1>
     <ul>
       {usuarios.map((usuario) => (
-        <li>{usuario.nombre_usuario} - {usuario.apellidos} - {usuario.correo}</li>
+        <li>{usuario.nombre_usuario} - {usuario.apellidos} - {usuario.correo} -{usuario.password}</li>
       ))}
     </ul>
   </main>
@@ -42,33 +39,6 @@ const usuarios = await response.json();
     color: #333333;
     margin-bottom: 2rem;
   }
-
-  label {
-    display: block;
-    margin: 0.5rem 0 0.2rem 0;
-    color: #555555;
-  }
-
-  .buttons {
-    display: flex;
-    justify-content: flex-end;
-    margin-bottom: 1rem;
-  }
-
-  .btn {
-    background-color: #007bff;
-    color: white;
-    border: none;
-    padding: 0.8rem 1.2rem;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-  }
-
-  .btn:hover {
-    background-color: #0056b3;
-  }
-
   form {
     display: flex;
     flex-direction: column;
@@ -96,15 +66,11 @@ document.addEventListener('DOMContentLoaded', function() {
         if (result.success) {
           alert(`Bienvenido, ${result.nombre_usuario}`);
           window.location.href = '/menu'; // Redirige a la página /menu
-        } else {
-          document.getElementById('login-error-message').textContent = result.message;
-          document.getElementById('login-success-message').textContent = '';
-        }
+        } else {        }
       })
       .catch((error) => {
         console.error('Error en la solicitud:', error);
-        document.getElementById('login-error-message').textContent = 'Error interno del servidor';
-        document.getElementById('login-success-message').textContent = '';
+        alert("error en el servidor");
       });
     }
   

@@ -2,6 +2,7 @@
 import Boton from "../components/Boton.astro"
 import Layout from "../layouts/Layout.astro"
 import Label from "../components/Apuestalabel.astro"
+import BotonSubmit from "../components/BotonSubmit.astro"
 ---
 
 <Layout title="Registro">
@@ -16,13 +17,9 @@ import Label from "../components/Apuestalabel.astro"
           <Label tipo="text" id="apellidos" nombre="apellidos" descripcion="Apellidos"/>
           <Label tipo="email" id="correo" nombre="correo" descripcion="Correo Electrónico"/>
           <Label tipo="password" id="contrasena" nombre="contrasena" descripcion="Contraseña"/>
-          <button type="submit">Completar Registro</button>
+          <BotonSubmit title="Completar Registro" color="azul" typeButton="submit" />
         </form>
       </article>
-    </section>
-    <section>
-      <p id="success-message" style="color: green;"></p>
-      <p id="error-message" style="color: red;"></p>
     </section>
   </main>
   <Boton href=".." title="regresar" color="verde" />
@@ -62,7 +59,7 @@ import Label from "../components/Apuestalabel.astro"
     function handleFormSubmit(event) {
       event.preventDefault(); // Previene el comportamiento predeterminado del formulario
       console.log('Formulario enviado'); // Log adicional
-      const formData = new FormData(event.target);
+      const formData = new FormData(event.target) ;
       const data = Object.fromEntries(formData.entries());
 
       console.log('Datos del formulario:', data); // Log adicional

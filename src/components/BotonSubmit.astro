@@ -1,0 +1,38 @@
+---
+type ButtonHTMLAttributes= 
+    "reset"|
+    "submit"|
+    "button";
+interface Props {
+    title: string;
+    typeButton: ButtonHTMLAttributes;
+    color: string;
+}
+const{title,typeButton,color} =Astro.props;
+---
+<button  type={typeButton} class={color}>{title}</button>
+
+<style>
+button {
+    border: none;
+    padding: 0.8rem 1.2rem;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+.azul{
+    background-color: #007bff;
+    color: white;
+}
+.azul:hover {
+    background-color: #0056b3;
+}
+.verde{
+    background-color: var(--primary-green);
+    color: white;
+}
+.verde:hover{
+    background-color: var(--green-dark);
+}
+
+</style>

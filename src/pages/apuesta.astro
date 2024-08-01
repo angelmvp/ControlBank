@@ -7,20 +7,14 @@ import FormLabelRequired from "../components/Apuestalabel.astro"
 <Layout title="Nueva Apuesta">
     <Boton href="menu" title="regresar" color="verde" />
     <form action="/submit-bet" method="post" class="form-apuesta">
-        <!-- <label for="deporte">Deporte:</label>
-        <select id="deporte" name="deporte" required>
-            <option value="" disabled selected>Seleccione un deporte</option>
-            <option value="baseball">Baseball</option>
-            <option value="futbol">Fútbol</option>
-            <option value="futbol-americano">Fútbol Americano</option>
-            <option value="basketball">Basketball</option>
-        </select> -->
-        
         <FormLabelRequired tipo="text" id="Deporte" nombre="EleccionDeporte" descripcion="Deporte"/>
+        <FormLabelRequired tipo="text" id="Liga" nombre="Eleccionliga" descripcion="Liga"/>
         <FormLabelRequired tipo="date" id="Fecha" nombre="FechaApuesta" descripcion="Fecha de la Apuesta"/>
         <FormLabelRequired tipo="text" id="NombreApuesta" nombre="NombreDeApuesta" descripcion="Nombre de la Apuesta"/>
         <FormLabelRequired tipo="text" id="TipoApuesta" nombre="TipoDeLaApuesta" descripcion="Tipo de la Apuesta"/>
-        <FormLabelRequired tipo="text" id="Deporte" nombre="EleccionDeporte" descripcion="Deporte"/>
+        <FormLabelRequired tipo="text" id="Momio" nombre="Momio" descripcion="Momio"/>
+        <FormLabelRequired tipo="text" id="Cantidad" nombre="Cantidad" descripcion="Cantidad"/>
+        
         <label for="resultado">Resultado:</label>
         <div class="checkbox">
             <input type="checkbox" id="ganada" name="resultado" value="ganada">
@@ -32,8 +26,12 @@ import FormLabelRequired from "../components/Apuestalabel.astro"
         </div>
         <button type="submit" class="submit-button">Guardar Apuesta</button>
     </form>
-        <Boton href="menu" title="regresar" color="verde" />
+
+    <label for="deportes">Escoge un deporte:</label>
+    <select id="deportes"></select>
+    <Boton href="menu" title="regresar" color="verde" />
 </Layout>
+
 <style>
 .form-apuesta {
     display: flex;
@@ -42,10 +40,9 @@ import FormLabelRequired from "../components/Apuestalabel.astro"
     margin: 0 auto;
     border-radius: 8px;
     background-color: var(--bg-gray);
-    padding:30px;
+    padding: 30px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
-
 
 .checkbox-group {
     display: flex;
@@ -70,5 +67,33 @@ import FormLabelRequired from "../components/Apuestalabel.astro"
 .submit-button:hover {
     background-color: var(--green-dark);
 }
-
 </style>
+
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+    try {
+        const response = await fetch('http://localhost:4322/deportes', {
+            credentials: 'include' // Importante para enviar cookies con la solicitud
+        });
+        if (response.ok) {
+            const deportes = await response.json();
+            const select = document.getElementById('deportes');
+            if (select) {
+                deportes.forEach(deporte => {
+                    const option = document.createElement('option');
+                    option.value = deporte.nombre;
+                    option.textContent = deporte.nombre;
+                    select.appendChild(option);
+                });
+            }
+        } else {
+            console.error('Error al obtener deportes:', response.statusText);
+        }
+    } catch (e) {
+        console.error('Error al obtener deportes:', e);
+    }
+});
+</script>
+<script>
+    
+</script>
