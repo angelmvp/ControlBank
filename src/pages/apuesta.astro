@@ -2,13 +2,18 @@
 import Boton from "../components/Boton.astro"
 import Layout from "../layouts/Layout.astro"
 import FormLabelRequired from "../components/Apuestalabel.astro"
+import BotonSubmit from "../components/BotonSubmit.astro"
 ---
 
 <Layout title="Nueva Apuesta">
     <Boton href="menu" title="regresar" color="verde" />
     <form action="/submit-bet" method="post" class="form-apuesta">
-        <FormLabelRequired tipo="text" id="Deporte" nombre="EleccionDeporte" descripcion="Deporte"/>
-        <FormLabelRequired tipo="text" id="Liga" nombre="Eleccionliga" descripcion="Liga"/>
+            <label for="deportes">Escoge un deporte:</label>
+            <select id="lista-deportes"></select>
+            <label for="ligas">Escoge una liga:</label>
+            <select id="lista-ligas"></select>
+
+
         <FormLabelRequired tipo="date" id="Fecha" nombre="FechaApuesta" descripcion="Fecha de la Apuesta"/>
         <FormLabelRequired tipo="text" id="NombreApuesta" nombre="NombreDeApuesta" descripcion="Nombre de la Apuesta"/>
         <FormLabelRequired tipo="text" id="TipoApuesta" nombre="TipoDeLaApuesta" descripcion="Tipo de la Apuesta"/>
@@ -16,20 +21,19 @@ import FormLabelRequired from "../components/Apuestalabel.astro"
         <FormLabelRequired tipo="text" id="Cantidad" nombre="Cantidad" descripcion="Cantidad"/>
         
         <label for="resultado">Resultado:</label>
-        <div class="checkbox">
+        <div class="checkbox-group">
             <input type="checkbox" id="ganada" name="resultado" value="ganada">
             <label for="ganada">Ganada</label>
             <input type="checkbox" id="perdida" name="resultado" value="perdida">
             <label for="perdida">Perdida</label>
             <input type="checkbox" id="push" name="resultado" value="push">
-            <label for="push">Perdida</label>
+            <label for="push">Push</label>
         </div>
-        <button type="submit" class="submit-button">Guardar Apuesta</button>
+        <BotonSubmit typeButton="submit" color="verde" title="Guardar Apuesta" />
     </form>
-
-    <label for="deportes">Escoge un deporte:</label>
-    <select id="deportes"></select>
+    <p id="user"></p>
     <Boton href="menu" title="regresar" color="verde" />
+    <p id="depoid"></p>
 </Layout>
 
 <style>
@@ -68,32 +72,66 @@ import FormLabelRequired from "../components/Apuestalabel.astro"
     background-color: var(--green-dark);
 }
 </style>
-
-<script>
-document.addEventListener('DOMContentLoaded', async () => {
-    try {
-        const response = await fetch('http://localhost:4322/deportes', {
-            credentials: 'include' // Importante para enviar cookies con la solicitud
-        });
-        if (response.ok) {
-            const deportes = await response.json();
-            const select = document.getElementById('deportes');
-            if (select) {
+<script client:load>
+    document.addEventListener('DOMContentLoaded', async () => {
+        const userId = localStorage.getItem('id_usuario');
+        const listaDeportes = document.getElementById('lista-deportes');
+        
+        if (userId) {
+            const userIdElemento = document.getElementById('user');
+            userIdElemento.textContent = `Usuario ID: ${userId}`; // Mostrar el ID del usuario
+            try {
+                const response = await fetch(`http://localhost:4322/deportes/${userId}`);
+                const deportes = await response.json();
                 deportes.forEach(deporte => {
                     const option = document.createElement('option');
-                    option.value = deporte.nombre;
-                    option.textContent = deporte.nombre;
-                    select.appendChild(option);
+                    option.value = deporte.id_deporte;
+                    option.textContent = deporte.nombre_deporte;
+                    listaDeportes.appendChild(option);
                 });
+                console.log('Deportes cargados:', deportes); // Verifica los deportes cargados
+            } catch (error) {
+                console.error('Error obteniendo los deportes:', error);
             }
-        } else {
-            console.error('Error al obtener deportes:', response.statusText);
         }
-    } catch (e) {
-        console.error('Error al obtener deportes:', e);
-    }
-});
-</script>
-<script>
     
-</script>
+        // Agregar el manejador de eventos para el cambio en el select de deportes
+        listaDeportes.addEventListener('change', actualizarLigas);
+    });
+        
+    function actualizarLigas() {
+        const listaDeportes = document.getElementById('lista-deportes');
+        const selectedDeporteId = listaDeportes.value; // Obtener el ID del deporte seleccionado
+        const listaLigas = document.getElementById('lista-ligas');
+        const userId = localStorage.getItem('id_usuario');
+        const depoid = document.getElementById('depoid');
+        
+        console.log('Deporte seleccionado:', selectedDeporteId);
+        
+        if (!selectedDeporteId) {
+            console.error('No se ha seleccionado un deporte.');
+            return;
+        }
+    
+        depoid.textContent = `ID Deporte Seleccionado: ${selectedDeporteId}`;
+        
+        if (userId) {
+            fetch(`http://localhost:4322/ligas/${userId}/${selectedDeporteId}`)
+            .then(response => response.json())
+            .then(ligas => {
+                listaLigas.innerHTML = ''; // Limpiar la lista antes de agregar nuevas ligas
+                ligas.forEach(liga => {
+                    const option = document.createElement('option');
+                    option.value = liga.id_liga;
+                    option.textContent = liga.nombre_liga;
+                    listaLigas.appendChild(option);
+                });
+            })
+            .catch((error) => {
+                console.error('Error obteniendo las ligas:', error);
+            });
+        } else {
+            console.error('ID de usuario no encontrado.');
+        }
+    }
+    </script>

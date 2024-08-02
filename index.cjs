@@ -65,7 +65,7 @@ app.post('/login', async (req, res) => {
   app.get('/deportes/:usuario_id', async (req, res) => {
     const { usuario_id } = req.params;
     const texto = `
-      SELECT nombre_deporte 
+      SELECT id_deporte, nombre_deporte 
       FROM deporte  
       JOIN usuario_deporte ud ON deporte.id_deporte = ud.deporte_id 
       WHERE ud.usuario_id = $1`;
@@ -78,6 +78,23 @@ app.post('/login', async (req, res) => {
       res.status(500).json({ error: 'Error en el servidor' });
     }
   });
+
+  app.get('/ligas/:userId/:deporteId', async (req, res) => {
+    const { userId, deporteId } = req.params;
+    const texto = `
+      SELECT nombre_liga 
+      FROM liga  
+      JOIN usuario_liga ul ON liga.id_liga = ul.liga_id 
+      WHERE ul.usuario_id = $1 AND liga.deporte_id = $2`;
+    try {
+      const result = await pool.query(texto, [userId, deporteId]);
+      res.json(result.rows);
+    } catch (err) {
+      console.error('Error ejecutando la consulta:', err);
+      res.status(500).json({ error: 'Error en el servidor' });
+    }
+  });
+  
   
   
 
