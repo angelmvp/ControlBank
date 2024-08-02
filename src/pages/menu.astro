@@ -1,7 +1,6 @@
 ---
 import Boton from "../components/Boton.astro"
 import Layout from "../layouts/Layout.astro"
-const { nombre_usuario } = Astro.props;
 ---
 
 <Layout title="Menu principal">
@@ -10,20 +9,50 @@ const { nombre_usuario } = Astro.props;
         <Boton href="apuesta" title="Registrar Apuesta" color="azul"/>
         <Boton href="parlay" title="Registrar Parlay" color="azul"/>
         <Boton href="historial" title="Ver Historial" color="azul"/>
-        <Boton id="logout "href=".." title="regresar index" color="verde"/>
+        <Boton id="logout" href=".." title="Regresar al índice" color="verde"/>
     </nav>
     <section>
-        <h1>Bienvenido, {nombre_usuario}</h1>
-        <!-- Aquí puedes agregar el contenido del menú -->
-      </section>
+        <h1 id="bienvenida"></h1>
+        <ul id="lista-deportes"></ul>
+        <p id="user"></p>
+    </section>
 </Layout>
 
-
-<script>
-    document.getElementById("logout")?.addEventListener("click",()=>{
-        document.cookie='jwt=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
-        document.location.href="menu"; 
-    })
-
+<script client:load>
+    document.addEventListener('DOMContentLoaded', function() {
+        const nombreUsuario = localStorage.getItem('nombre_usuario');
+        const userId = localStorage.getItem('id_usuario');
+        const bienvenidaElemento = document.getElementById('bienvenida');
+        const listaDeportesElemento = document.getElementById('lista-deportes');
     
-</script>
+        if (nombreUsuario && bienvenidaElemento) {
+            bienvenidaElemento.textContent = `Bienvenido, ${nombreUsuario}`;
+        }
+    
+        if (userId) {
+            const userIdElemento = document.getElementById('user');
+            userIdElemento.textContent = `Usuario ID: ${userId}`; // Mostrar el ID del usuario
+    
+            fetch(`http://localhost:4322/deportes/${userId}`)
+            .then(response => response.json())
+            .then(deportes => {
+                deportes.forEach(deporte => {
+                    const li = document.createElement('li');
+                    li.textContent = deporte.nombre_deporte;
+                    listaDeportesElemento.appendChild(li);
+                });
+            })
+            .catch((error) => {
+                console.error('Error obteniendo los deportes:', error);
+            });
+        }
+    
+        document.getElementById("logout")?.addEventListener("click",()=>{
+            document.cookie = 'jwt=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+            localStorage.removeItem('id_usuario');
+            localStorage.removeItem('nombre_usuario');
+            document.location.href = ".."; 
+        });
+    });
+    </script>
+    

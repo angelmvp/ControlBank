@@ -6,7 +6,10 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 
 const pool = new Pool({
-    
+  user: 'postgres',
+  host: 'localhost',
+  password: '',
+  database: 'prueba'
 });
 
 app.use(bodyParser.json());
@@ -41,21 +44,38 @@ app.listen(port, () => {
 });
 
 app.post('/login', async (req, res) => {
-    const { correo, contrasena } = req.body;
-  
-    try {
+  const { correo, contrasena } = req.body;
+
+  try {
       const text = 'SELECT * FROM usuario WHERE correo = $1 AND password = $2';
       const valores = [correo, contrasena];
       const resultado = await pool.query(text, valores);
       if (resultado.rows.length > 0) {
-        const usuario = resultado.rows[0];
-        res.json({ success: true, nombre_usuario: usuario.nombre_usuario });
+          const usuario = resultado.rows[0];
+          res.json({ success: true, id_usuario: usuario.id_usuario, nombre_usuario: usuario.nombre_usuario });
       } else {
-        res.json({ success: false, message: 'Correo o contraseña incorrectos' });
+          res.json({ success: false, message: 'Correo o contraseña incorrectos' });
       }
-    } catch (error) {
+  } catch (error) {
       console.error('Error al iniciar sesión:', error);
       res.status(500).json({ success: false, message: 'Error interno del servidor' });
+  }
+});
+
+  app.get('/deportes/:usuario_id', async (req, res) => {
+    const { usuario_id } = req.params;
+    const texto = `
+      SELECT nombre_deporte 
+      FROM deporte  
+      JOIN usuario_deporte ud ON deporte.id_deporte = ud.deporte_id 
+      WHERE ud.usuario_id = $1`;
+    
+    try {
+      const result = await pool.query(texto, [usuario_id]);
+      res.json(result.rows);
+    } catch (err) {
+      console.error('Error ejecutando la consulta:', err);
+      res.status(500).json({ error: 'Error en el servidor' });
     }
   });
   

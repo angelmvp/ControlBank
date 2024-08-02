@@ -20,7 +20,7 @@ const usuarios = await response.json();
         <form id="login-form">
           <Label tipo="email" id="correo" nombre="correo" descripcion="Correo Electrónico" />
           <Label tipo="password" id="contrasena" nombre="contrasena" descripcion="Contraseña" />
-          <BotonSubmit title="Iniciar Sesion" color="azul" type="submit" />
+          <BotonSubmit title="Iniciar Sesion" color="azul" typeButton="submit" />
         </form>
       </article>
     </section>
@@ -55,27 +55,32 @@ document.addEventListener('DOMContentLoaded', function() {
       const data = Object.fromEntries(formData.entries());
   
       fetch('http://localhost:4322/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(data)
-      })
-      .then(response => response.json())
-      .then(result => {
-        if (result.success) {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(data)
+})
+.then(response => response.json())
+.then(result => {
+    if (result.success) {
+          localStorage.setItem('id_usuario', result.id_usuario); // Verifica que 'id_usuario' existe en 'result'
+          localStorage.setItem('nombre_usuario', result.nombre_usuario);
           alert(`Bienvenido, ${result.nombre_usuario}`);
           window.location.href = '/menu'; // Redirige a la página /menu
-        } else {        }
+        } else {
+          alert("Credenciales incorrectas");
+        }
       })
       .catch((error) => {
         console.error('Error en la solicitud:', error);
-        alert("error en el servidor");
+        alert("Error en el servidor");
       });
     }
   
     if (form) {
       form.addEventListener('submit', handleLoginFormSubmit);
     }
-  });
+});
+
 </script>  
