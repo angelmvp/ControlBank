@@ -8,13 +8,13 @@ const bodyParser = require('body-parser');
 const pool = new Pool({
   user: 'postgres',
   host: 'localhost',
-  password: '',
+  password: 'BD27-mVp+',
   database: 'prueba'
 });
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(cors()); // Agregar middleware cors para permitir solicitudes desde otros orígenes
+app.use(cors()); // Agregar middleware  cors para permitir solicitudes desde otros orígenes
 
 app.get('/usuarios', async (req, res) => {
     try {
@@ -47,9 +47,9 @@ app.post('/login', async (req, res) => {
   const { correo, contrasena } = req.body;
 
   try {
-      const text = 'SELECT * FROM usuario WHERE correo = $1 AND password = $2';
+      const texto = 'SELECT * FROM usuario WHERE correo = $1 AND password = $2';
       const valores = [correo, contrasena];
-      const resultado = await pool.query(text, valores);
+      const resultado = await pool.query(texto, valores);
       if (resultado.rows.length > 0) {
           const usuario = resultado.rows[0];
           res.json({ success: true, id_usuario: usuario.id_usuario, nombre_usuario: usuario.nombre_usuario });
@@ -82,13 +82,13 @@ app.post('/login', async (req, res) => {
   app.get('/ligas/:userId/:deporteId', async (req, res) => {
     const { userId, deporteId } = req.params;
     const texto = `
-      SELECT nombre_liga 
+      SELECT id_liga, nombre_liga 
       FROM liga  
       JOIN usuario_liga ul ON liga.id_liga = ul.liga_id 
       WHERE ul.usuario_id = $1 AND liga.deporte_id = $2`;
     try {
       const result = await pool.query(texto, [userId, deporteId]);
-      res.json(result.rows);
+      res.json(result.rows); 
     } catch (err) {
       console.error('Error ejecutando la consulta:', err);
       res.status(500).json({ error: 'Error en el servidor' });
@@ -96,6 +96,20 @@ app.post('/login', async (req, res) => {
   });
   
   
+  app.post('/apuesta', async (req, res) => {
+    const { usuario, liga, FechaApuesta, NombreDeApuesta, TipoDeLaApuesta, Momio, Cantidad, resultado } = req.body;
+    try {
+        const texto = `INSERT INTO apuesta(usuario_id, liga_id, fecha, nombre, tipo_apuesta, momio, cantidad_apostada, resultado)
+                        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`;
+        const valores = [usuario, liga, FechaApuesta, NombreDeApuesta, TipoDeLaApuesta, Momio, Cantidad, resultado];
+        console.log(valores);
+        await pool.query(texto, valores);
+    } catch (error) {
+        console.error('Error al registrar apuesta:', error);
+        res.status(500).json({ success: false, message: 'Error interno dsssel servidor' });
+    }
+});
+
   
 
 

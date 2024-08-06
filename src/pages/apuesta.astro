@@ -7,12 +7,12 @@ import BotonSubmit from "../components/BotonSubmit.astro"
 
 <Layout title="Nueva Apuesta">
     <Boton href="menu" title="regresar" color="verde" />
-    <form action="/submit-bet" method="post" class="form-apuesta">
-            <label for="deportes">Escoge un deporte:</label>
-            <select id="lista-deportes"></select>
-            <label for="ligas">Escoge una liga:</label>
-            <select id="lista-ligas"></select>
+    <form class="form-apuesta" id="form-apuesta">
+        <label for="deportes">Escoge un deporte:</label>
+        <select id="lista-deportes"></select>
 
+        <label for="ligas">Escoge una liga:</label>
+        <select id="lista-ligas"></select>
 
         <FormLabelRequired tipo="date" id="Fecha" nombre="FechaApuesta" descripcion="Fecha de la Apuesta"/>
         <FormLabelRequired tipo="text" id="NombreApuesta" nombre="NombreDeApuesta" descripcion="Nombre de la Apuesta"/>
@@ -29,11 +29,15 @@ import BotonSubmit from "../components/BotonSubmit.astro"
             <input type="checkbox" id="push" name="resultado" value="push">
             <label for="push">Push</label>
         </div>
+
+        <button type="button" onclick="mostrarDatosFormulario()" class="submit-button">Mostrar Datos</button>
         <BotonSubmit typeButton="submit" color="verde" title="Guardar Apuesta" />
     </form>
+
+    <div id="datosFormulario"></div>
     <p id="user"></p>
-    <Boton href="menu" title="regresar" color="verde" />
     <p id="depoid"></p>
+    <Boton href="menu" title="regresar" color="verde" />
 </Layout>
 
 <style>
@@ -71,7 +75,12 @@ import BotonSubmit from "../components/BotonSubmit.astro"
 .submit-button:hover {
     background-color: var(--green-dark);
 }
+
+#datosFormulario {
+    margin-top: 20px;
+}
 </style>
+
 <script client:load>
     document.addEventListener('DOMContentLoaded', async () => {
         const userId = localStorage.getItem('id_usuario');
@@ -134,4 +143,84 @@ import BotonSubmit from "../components/BotonSubmit.astro"
             console.error('ID de usuario no encontrado.');
         }
     }
-    </script>
+
+    function mostrarDatosFormulario() {
+        const form = document.getElementById('form-apuesta');
+        const ligaId = document.getElementById('lista-ligas').value;
+        const userId = localStorage.getItem('id_usuario');
+        const formData = new FormData(form);
+        formData.append('id_usuario', userId);
+        formData.append('id_liga', ligaId);
+        const resultados = Array.from(document.querySelectorAll('input[name="resultado"]:checked'))
+                            .map(checkbox => checkbox.value);
+        formData.append('resultado', resultados.join(','));
+
+        const data = Object.fromEntries(formData.entries());
+        const datosFormularioDiv = document.getElementById('datosFormulario');
+        datosFormularioDiv.innerHTML = ''; // Limpiar el contenido previo
+
+        for (const [key, value] of Object.entries(data)) {
+            const p = document.createElement('p');
+            p.textContent = `${key}: ${value}`;
+            datosFormularioDiv.appendChild(p);
+        }
+
+        console.log('Datos del formulario:', data); // Verificar los datos del formulario
+    }
+    document.getElementById('form-apuesta').addEventListener('submit', async (event) => {
+    event.preventDefault(); // Prevenir el comportamiento por defecto del submit
+
+    const form = event.target;
+    const ligaId = document.getElementById('lista-ligas').value;
+    const userId = localStorage.getItem('id_usuario');
+
+    const momioField = document.getElementById('Momio');
+    const cantidadField = document.getElementById('Cantidad');
+    
+    // Validate numeric fields
+    if (isNaN(momioField.value) || isNaN(cantidadField.value)) {
+        alert('Momio y Cantidad deben ser valores numéricos.');
+        return;
+    }
+
+    const formData = new FormData(form);
+    formData.append('usuario', userId); // Agregar el ID del usuario
+    formData.append('liga', ligaId); // Agregar el ID de la liga
+    const resultados = Array.from(document.querySelectorAll('input[name="resultado"]:checked'))
+                            .map(checkbox => checkbox.value);
+    formData.append('resultado', resultados.join(','));
+    const data = Object.fromEntries(formData.entries());
+    console.log('Datos del formulario:', data); // Verificar los datos del formulario
+
+    try {
+        const response = await fetch('http://localhost:4322/apuesta', {
+            method: 'POST',
+            body: JSON.stringify(data),
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (response.ok) {
+            console.log('Apuesta guardada exitosamente');
+            alert('Apuesta hecha con éxito');
+        } else {
+            const errorData = await response.json(); // Aquí debes recibir el JSON de error si lo envías desde el servidor
+            console.error('Error al guardar la apuesta:', errorData.message || 'Error desconocido');
+            alert('Error al guardar la apuesta: ' + (errorData.message || 'Error desconocido'));
+        }
+
+    } catch (error) {
+        console.error('Error en el envío del formulario:', error);
+    }
+});
+
+// Make checkboxes behave like radio buttons
+document.querySelectorAll('input[name="resultado"]').forEach((checkbox) => {
+    checkbox.addEventListener('change', function() {
+        document.querySelectorAll('input[name="resultado"]').forEach((box) => {
+            if (box !== this) box.checked = false;
+        });
+    });
+});
+</script>
