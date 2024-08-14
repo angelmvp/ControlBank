@@ -8,7 +8,7 @@ const bodyParser = require('body-parser');
 const pool = new Pool({
   user: 'postgres',
   host: 'localhost',
-  password: 'BD27-mVp+',
+  password: '',
   database: 'prueba'
 });
 
@@ -65,10 +65,10 @@ app.post('/login', async (req, res) => {
   app.get('/deportes/:usuario_id', async (req, res) => {
     const { usuario_id } = req.params;
     const texto = `
-      SELECT id_deporte, nombre_deporte 
-      FROM deporte  
-      JOIN usuario_deporte ud ON deporte.id_deporte = ud.deporte_id 
-      WHERE ud.usuario_id = $1`;
+      select distinct id_deporte, nombre_deporte from deporte
+      join liga on liga.deporte_id=id_deporte
+      join usuario_liga on usuario_liga.liga_id=liga.id_liga 
+      where usuario_liga.usuario_id=$1 `;
     
     try {
       const result = await pool.query(texto, [usuario_id]);
@@ -102,13 +102,69 @@ app.post('/login', async (req, res) => {
         const texto = `INSERT INTO apuesta(usuario_id, liga_id, fecha, nombre, tipo_apuesta, momio, cantidad_apostada, resultado)
                         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`;
         const valores = [usuario, liga, FechaApuesta, NombreDeApuesta, TipoDeLaApuesta, Momio, Cantidad, resultado];
-        console.log(valores);
         await pool.query(texto, valores);
+        res.status(201).json({success:true});
     } catch (error) {
         console.error('Error al registrar apuesta:', error);
         res.status(500).json({ success: false, message: 'Error interno dsssel servidor' });
     }
 });
+
+app.get('/obtenerdeportes', async (req,res) =>{
+  const{deporteId,deportNombre}=req.params;
+  const texto=`
+      select id_deporte,nombre_deporte from deporte`;
+  try{
+      const result= await pool.query(texto)
+      res.json(result.rows);
+    }catch(error){
+    console.error('Error al obtener deporte:', error);
+  }
+});
+
+app.get('/obtenerligas/:deporteId', async (req, res) => {
+  const { deporteId } = req.params;
+  const texto = `
+    SELECT id_liga, nombre_liga 
+    FROM liga  
+    JOIN deporte d ON d.id_deporte = liga.deporte_id 
+    WHERE d.id_deporte=$1`;
+  try {
+    const result = await pool.query(texto, [deporteId]);
+    res.json(result.rows); 
+  } catch (err) {
+    console.error('Error ejecutando la consulta:', err);
+    res.status(500).json({ error: 'Error en el servidor' });
+  }
+});
+
+app.post('/guardarnuevaliga/:userId/:ligaId', async (req, res) => {
+  const { userId, ligaId } = req.body;
+  const texto = `
+    INSERT INTO usuario_liga(usuario_id, liga_id) VALUES ($1, $2)
+    ON CONFLICT (usuario_id, liga_id) DO NOTHING`; // Evita duplicación
+  
+  try {
+    const result = await pool.query(texto, [userId, ligaId]);
+    
+    if (result.rowCount === 0) {
+      // Si no se insertó ninguna fila, es porque ya existía el registro
+      res.status(409).json({ success: false, message: 'Ya tienes registrada esta liga.' });
+    } else {
+      res.status(201).json({ success: true });
+      console.log("Liga registrada con éxito");
+    }
+  } catch (error) {
+    console.error('Error al insertar:', error);
+    if (error.code === '23505') {
+      // Error de duplicación
+      res.status(409).json({ success: false, message: 'Ya tienes registrada esta liga.' });
+    } else {
+      res.status(500).json({ success: false, message: 'Error interno del servidor' });
+    }
+  }
+});
+
 
   
 

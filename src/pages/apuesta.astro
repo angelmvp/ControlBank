@@ -8,11 +8,24 @@ import BotonSubmit from "../components/BotonSubmit.astro"
 <Layout title="Nueva Apuesta">
     <Boton href="menu" title="regresar" color="verde" />
     <form class="form-apuesta" id="form-apuesta">
-        <label for="deportes">Escoge un deporte:</label>
-        <select id="lista-deportes"></select>
+        <div id="separador-deportes">
+            <article>
+            <label for="deportes">Escoge un deporte:</label>
+            <select id="lista-deportes">
+                <option value="0">Seleccione un Deporte</option>
+            </select>
+            </article>
+            <article>
+                <label for="ligas">Escoge una liga:</label>
+                <select id="lista-ligas"></select>
+            </article>
+            <article id="open-modal-button">
+                <BotonSubmit typeButton="button" color="verde" title="registrar nuevo deporte o liga" />
+            </article>
+        </div>
 
-        <label for="ligas">Escoge una liga:</label>
-        <select id="lista-ligas"></select>
+
+
 
         <FormLabelRequired tipo="date" id="Fecha" nombre="FechaApuesta" descripcion="Fecha de la Apuesta"/>
         <FormLabelRequired tipo="text" id="NombreApuesta" nombre="NombreDeApuesta" descripcion="Nombre de la Apuesta"/>
@@ -29,8 +42,6 @@ import BotonSubmit from "../components/BotonSubmit.astro"
             <input type="checkbox" id="push" name="resultado" value="push">
             <label for="push">Push</label>
         </div>
-
-        <button type="button" onclick="mostrarDatosFormulario()" class="submit-button">Mostrar Datos</button>
         <BotonSubmit typeButton="submit" color="verde" title="Guardar Apuesta" />
     </form>
 
@@ -38,6 +49,30 @@ import BotonSubmit from "../components/BotonSubmit.astro"
     <p id="user"></p>
     <p id="depoid"></p>
     <Boton href="menu" title="regresar" color="verde" />
+
+
+
+<!-- Modal for adding a new sport or league -->
+<div class="modal" id="modal">
+    <div class="modal-header">
+        <h2>Registrar nuevo deporte o liga</h2>
+        <button id="close-modal-button">&times;</button>
+    </div>
+    <div class="modal-body">
+        <label for="deportess">Escoge un deporte:</label>
+        <select id="nueva-lista-deportes">
+            <option value="0">Seleccione un Deporte</option>
+        </select>
+        <label for="ligass">Escoge un deporte:</label>
+        <select id="nueva-lista-ligas">
+            <option value="0">Seleccione una liga</option>
+        </select>
+    </div>
+    <div class="modal-footer">
+        <BotonSubmit typeButton="submit" color="verde" title="Guardar" />
+    </div>
+</div>
+
 </Layout>
 
 <style>
@@ -54,31 +89,67 @@ import BotonSubmit from "../components/BotonSubmit.astro"
 
 .checkbox-group {
     display: flex;
-    gap: 1rem;
+    gap: 1.5rem;
     align-items: center;
 }
 
-.checkbox-group input[type="checkbox"] {
-    margin-right: 0.5rem;
+.checkbox-group label {
+    margin-right: 1rem;
 }
 
-.submit-button {
-    background-color: var(--primary-green);
-    color: white;
-    padding: 0.75rem;
-    border: none;
-    border-radius: 4px;
-    font-size: 1rem;
-    cursor: pointer;
-}
-
-.submit-button:hover {
-    background-color: var(--green-dark);
+#separador-deportes {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
 }
 
 #datosFormulario {
     margin-top: 20px;
 }
+
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 400px;
+    background-color: white;
+    padding: 20px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    border-radius: 8px;
+}
+
+.modal.active {
+    display: block;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h2 {
+    margin: 0;
+}
+
+.modal-body {
+    margin-top: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.modal-footer {
+    margin-top: 20px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+}
+
 </style>
 
 <script client:load>
@@ -143,30 +214,6 @@ import BotonSubmit from "../components/BotonSubmit.astro"
             console.error('ID de usuario no encontrado.');
         }
     }
-
-    function mostrarDatosFormulario() {
-        const form = document.getElementById('form-apuesta');
-        const ligaId = document.getElementById('lista-ligas').value;
-        const userId = localStorage.getItem('id_usuario');
-        const formData = new FormData(form);
-        formData.append('id_usuario', userId);
-        formData.append('id_liga', ligaId);
-        const resultados = Array.from(document.querySelectorAll('input[name="resultado"]:checked'))
-                            .map(checkbox => checkbox.value);
-        formData.append('resultado', resultados.join(','));
-
-        const data = Object.fromEntries(formData.entries());
-        const datosFormularioDiv = document.getElementById('datosFormulario');
-        datosFormularioDiv.innerHTML = ''; // Limpiar el contenido previo
-
-        for (const [key, value] of Object.entries(data)) {
-            const p = document.createElement('p');
-            p.textContent = `${key}: ${value}`;
-            datosFormularioDiv.appendChild(p);
-        }
-
-        console.log('Datos del formulario:', data); // Verificar los datos del formulario
-    }
     document.getElementById('form-apuesta').addEventListener('submit', async (event) => {
     event.preventDefault(); // Prevenir el comportamiento por defecto del submit
 
@@ -176,8 +223,6 @@ import BotonSubmit from "../components/BotonSubmit.astro"
 
     const momioField = document.getElementById('Momio');
     const cantidadField = document.getElementById('Cantidad');
-    
-    // Validate numeric fields
     if (isNaN(momioField.value) || isNaN(cantidadField.value)) {
         alert('Momio y Cantidad deben ser valores numéricos.');
         return;
@@ -215,12 +260,96 @@ import BotonSubmit from "../components/BotonSubmit.astro"
     }
 });
 
-// Make checkboxes behave like radio buttons
 document.querySelectorAll('input[name="resultado"]').forEach((checkbox) => {
     checkbox.addEventListener('change', function() {
         document.querySelectorAll('input[name="resultado"]').forEach((box) => {
             if (box !== this) box.checked = false;
         });
     });
+});
+
+const modal =document.getElementById('modal');
+const openModalButton = document.getElementById('open-modal-button');
+const closeModalButton = document.getElementById('close-modal-button');
+const nuevodeporte = document.getElementById('nueva-lista-deportes');
+const nuevaliga = document.getElementById('nueva-lista-ligas');
+openModalButton.addEventListener('click', async () => {
+        modal.classList.add('active');
+        
+        try {
+            const deportesResponse = await fetch('http://localhost:4322/obtenerdeportes');
+            const deportes = await deportesResponse.json();
+            nuevodeporte.innerHTML = '<option value="0">Seleccione un Deporte</option>';
+            deportes.forEach(deporte => {
+                const option = document.createElement('option');
+                option.value = deporte.id_deporte;
+                option.textContent = deporte.nombre_deporte;
+                nuevodeporte.appendChild(option);
+            });
+        } catch (error) {
+            console.error('Error obteniendo los deportes:', error);
+        }
+    });
+    closeModalButton.addEventListener('click', () => {
+        modal.classList.remove('active');
+    });
+    window.addEventListener('click', (event) => {
+        if (event.target === modal) {
+            modal.classList.remove('active');
+        }
+    });
+    nuevodeporte.addEventListener('change', async () => {
+    const deporteid = nuevodeporte.value;
+    if (deporteid && deporteid !== '0') {
+        try {
+            const ligasResponse = await fetch(`http://localhost:4322/obtenerligas/${deporteid}`);
+            const ligas = await ligasResponse.json();
+            nuevaliga.innerHTML = '<option value="0">Seleccione una liga</option>';
+            ligas.forEach(liga => {
+                const option = document.createElement('option');
+                option.value = liga.id_liga;
+                option.textContent = liga.nombre_liga;
+                nuevaliga.appendChild(option);
+            });
+        } catch (error) {
+            console.error('Error obteniendo las ligas:', error);
+        }
+    } else {
+        nuevaliga.innerHTML = '<option value="0">Seleccione una liga</option>';
+    }
+});
+        const guardarButton = document.querySelector('.modal-footer button[type="submit"]');
+        guardarButton.addEventListener('click', async (event) => {
+    event.preventDefault();
+
+    const selectedDeporteId = nuevodeporte.value;
+    const selectedLigaId = nuevaliga.value;
+    const userId = localStorage.getItem('id_usuario');
+
+    if (selectedDeporteId === '0' || selectedLigaId === '0') {
+        alert('Por favor, seleccione un deporte y una liga.');
+        return;
+    }
+
+    try {
+        const response = await fetch(`http://localhost:4322/guardarnuevaliga/${userId}/${selectedLigaId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ userId, ligaId: selectedLigaId }),
+        });
+
+        if (response.ok) {
+            alert('Nueva liga registrada con éxito');
+            modal.classList.remove('active');
+        } else {
+            const errorData = await response.json();
+            alert(`Error al guardar la liga: ${errorData.message || 'Error desconocido'}`);
+        }
+    } catch (error) {
+        console.error('Error al guardar la nueva liga:', error);
+        alert('Error al guardar la nueva liga');
+    }
 });
 </script>
