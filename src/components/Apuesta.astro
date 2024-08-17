@@ -1,0 +1,53 @@
+---
+interface Props {
+  fecha: Date;
+  evento: string;
+  descripcion: string;
+  momio: number;
+  cantidad_apostada: number;
+  resultado: 'ganada' | 'perdida' | 'push';
+}
+
+const { fecha, evento, descripcion, momio, cantidad_apostada, resultado } = Astro.props;
+
+// Calculate gain based on the result
+let ganancia: number;
+if (resultado === 'ganada') {
+  ganancia = cantidad_apostada * (momio / 100) + cantidad_apostada; // Assuming momio is the odds in a format like +100
+} else if (resultado === 'perdida') {
+  ganancia = 0;
+} else if (resultado === 'push') {
+  ganancia = cantidad_apostada;
+}
+---
+
+<div class="apuesta">
+  <h2>Detalle de Apuesta</h2>
+  <p>Fecha:  {fecha}</p>
+  <p> Evento:  {evento}</p>
+  <p> Descripción:  {descripcion}</p>
+  <p> Momio:  {momio}</p>
+  <p> Cantidad Apostada:  {cantidad_apostada}</p>
+  <p> Resultado:  {resultado}</p>
+  <p> Ganancia:  {ganancia}</p>
+</div>
+
+<style>
+.apuesta {
+  border: 1px solid #ccc;
+  padding: 16px;
+  border-radius: 8px;
+  background-color: var(--bg-light-gray);
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.apuesta h2 {
+  margin-top: 0;
+  font-size: 1.5rem;
+}
+
+.apuesta p {
+  margin: 8px 0;
+}
+</style>

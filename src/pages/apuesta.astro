@@ -28,7 +28,8 @@ import BotonSubmit from "../components/BotonSubmit.astro"
 
 
         <FormLabelRequired tipo="date" id="Fecha" nombre="FechaApuesta" descripcion="Fecha de la Apuesta"/>
-        <FormLabelRequired tipo="text" id="NombreApuesta" nombre="NombreDeApuesta" descripcion="Nombre de la Apuesta"/>
+        <FormLabelRequired tipo="text" id="Evento" nombre="Evento" descripcion="Evento apostado"/>
+        <FormLabelRequired tipo="text" id="DescripcionApuesta" nombre="DescripcionApuesta" descripcion="Descripcion de la Apuesta"/>
         <FormLabelRequired tipo="text" id="TipoApuesta" nombre="TipoDeLaApuesta" descripcion="Tipo de la Apuesta"/>
         <FormLabelRequired tipo="text" id="Momio" nombre="Momio" descripcion="Momio"/>
         <FormLabelRequired tipo="text" id="Cantidad" nombre="Cantidad" descripcion="Cantidad"/>
@@ -151,205 +152,239 @@ import BotonSubmit from "../components/BotonSubmit.astro"
 }
 
 </style>
-
 <script client:load>
-    document.addEventListener('DOMContentLoaded', async () => {
+    document.addEventListener('DOMContentLoaded', init);
+
+    // Initial Setup Function
+    async function init() {
         const userId = localStorage.getItem('id_usuario');
-        const listaDeportes = document.getElementById('lista-deportes');
-        
         if (userId) {
-            const userIdElemento = document.getElementById('user');
-            userIdElemento.textContent = `Usuario ID: ${userId}`; // Mostrar el ID del usuario
-            try {
-                const response = await fetch(`http://localhost:4322/deportes/${userId}`);
-                const deportes = await response.json();
-                deportes.forEach(deporte => {
-                    const option = document.createElement('option');
-                    option.value = deporte.id_deporte;
-                    option.textContent = deporte.nombre_deporte;
-                    listaDeportes.appendChild(option);
-                });
-                console.log('Deportes cargados:', deportes); // Verifica los deportes cargados
-            } catch (error) {
-                console.error('Error obteniendo los deportes:', error);
-            }
-        }
-    
-        // Agregar el manejador de eventos para el cambio en el select de deportes
-        listaDeportes.addEventListener('change', actualizarLigas);
-    });
-        
-    function actualizarLigas() {
-        const listaDeportes = document.getElementById('lista-deportes');
-        const selectedDeporteId = listaDeportes.value; // Obtener el ID del deporte seleccionado
-        const listaLigas = document.getElementById('lista-ligas');
-        const userId = localStorage.getItem('id_usuario');
-        const depoid = document.getElementById('depoid');
-        
-        console.log('Deporte seleccionado:', selectedDeporteId);
-        
-        if (!selectedDeporteId) {
-            console.error('No se ha seleccionado un deporte.');
-            return;
-        }
-    
-        depoid.textContent = `ID Deporte Seleccionado: ${selectedDeporteId}`;
-        
-        if (userId) {
-            fetch(`http://localhost:4322/ligas/${userId}/${selectedDeporteId}`)
-            .then(response => response.json())
-            .then(ligas => {
-                listaLigas.innerHTML = ''; // Limpiar la lista antes de agregar nuevas ligas
-                ligas.forEach(liga => {
-                    const option = document.createElement('option');
-                    option.value = liga.id_liga;
-                    option.textContent = liga.nombre_liga;
-                    listaLigas.appendChild(option);
-                });
-            })
-            .catch((error) => {
-                console.error('Error obteniendo las ligas:', error);
-            });
+            MostrarIdUsuario(userId);
+            await cargarDeportes(userId);
+            setupEventListeners();
         } else {
             console.error('ID de usuario no encontrado.');
         }
     }
-    document.getElementById('form-apuesta').addEventListener('submit', async (event) => {
-    event.preventDefault(); // Prevenir el comportamiento por defecto del submit
 
-    const form = event.target;
-    const ligaId = document.getElementById('lista-ligas').value;
-    const userId = localStorage.getItem('id_usuario');
-
-    const momioField = document.getElementById('Momio');
-    const cantidadField = document.getElementById('Cantidad');
-    if (isNaN(momioField.value) || isNaN(cantidadField.value)) {
-        alert('Momio y Cantidad deben ser valores numéricos.');
-        return;
+    // Display the User ID
+    function MostrarIdUsuario(userId) {
+        const userIdElemento = document.getElementById('user');
+        userIdElemento.textContent = `Usuario ID: ${userId}`;
     }
 
-    const formData = new FormData(form);
-    formData.append('usuario', userId); // Agregar el ID del usuario
-    formData.append('liga', ligaId); // Agregar el ID de la liga
-    const resultados = Array.from(document.querySelectorAll('input[name="resultado"]:checked'))
-                            .map(checkbox => checkbox.value);
-    formData.append('resultado', resultados.join(','));
-    const data = Object.fromEntries(formData.entries());
-    console.log('Datos del formulario:', data); // Verificar los datos del formulario
-
-    try {
-        const response = await fetch('http://localhost:4322/apuesta', {
-            method: 'POST',
-            body: JSON.stringify(data),
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        });
-
-        if (response.ok) {
-            console.log('Apuesta guardada exitosamente');
-            alert('Apuesta hecha con éxito');
-        } else {
-            const errorData = await response.json(); // Aquí debes recibir el JSON de error si lo envías desde el servidor
-            console.error('Error al guardar la apuesta:', errorData.message || 'Error desconocido');
-            alert('Error al guardar la apuesta: ' + (errorData.message || 'Error desconocido'));
-        }
-
-    } catch (error) {
-        console.error('Error en el envío del formulario:', error);
-    }
-});
-
-document.querySelectorAll('input[name="resultado"]').forEach((checkbox) => {
-    checkbox.addEventListener('change', function() {
-        document.querySelectorAll('input[name="resultado"]').forEach((box) => {
-            if (box !== this) box.checked = false;
-        });
-    });
-});
-
-const modal =document.getElementById('modal');
-const openModalButton = document.getElementById('open-modal-button');
-const closeModalButton = document.getElementById('close-modal-button');
-const nuevodeporte = document.getElementById('nueva-lista-deportes');
-const nuevaliga = document.getElementById('nueva-lista-ligas');
-openModalButton.addEventListener('click', async () => {
-        modal.classList.add('active');
-        
+    // Load Deportes
+    async function cargarDeportes(userId) {
+        const listaDeportes = document.getElementById('lista-deportes');
         try {
-            const deportesResponse = await fetch('http://localhost:4322/obtenerdeportes');
-            const deportes = await deportesResponse.json();
-            nuevodeporte.innerHTML = '<option value="0">Seleccione un Deporte</option>';
-            deportes.forEach(deporte => {
-                const option = document.createElement('option');
-                option.value = deporte.id_deporte;
-                option.textContent = deporte.nombre_deporte;
-                nuevodeporte.appendChild(option);
-            });
+            const response = await fetch(`http://localhost:4322/deportes/${userId}`);
+            const deportes = await response.json();
+            popularDeportes(listaDeportes, deportes);
         } catch (error) {
             console.error('Error obteniendo los deportes:', error);
         }
-    });
-    closeModalButton.addEventListener('click', () => {
-        modal.classList.remove('active');
-    });
-    window.addEventListener('click', (event) => {
-        if (event.target === modal) {
-            modal.classList.remove('active');
+    }
+
+    // Populate Deportes in Select
+    function popularDeportes(selectElement, deportes) {
+        selectElement.innerHTML = '<option value="0">Seleccione un Deporte</option>';
+        deportes.forEach(deporte => {
+            const option = document.createElement('option');
+            option.value = deporte.id_deporte;
+            option.textContent = deporte.nombre_deporte;
+            selectElement.appendChild(option);
+        });
+    }
+
+    // Setup Event Listeners
+    function setupEventListeners() {
+        document.getElementById('lista-deportes').addEventListener('change', actualizarLigas);
+        document.getElementById('form-apuesta').addEventListener('submit', handleSubmit);
+        document.querySelectorAll('input[name="resultado"]').forEach(checkbox => {
+            checkbox.addEventListener('change', handleCheckboxChange);
+        });
+        setupModalEventListeners();
+    }
+
+    // Handle Form Submission
+    async function handleSubmit(event) {
+        event.preventDefault();
+
+        const form = event.target;
+        const ligaId = document.getElementById('lista-ligas').value;
+        const userId = localStorage.getItem('id_usuario');
+
+
+        const campos = [
+        { id: 'Fecha', name: 'Fecha de la Apuesta' },
+        { id: 'Evento', name: 'Evento apostado' },
+        { id: 'DescripcionApuesta', name: 'Descripcion de la Apuesta' },
+        { id: 'TipoApuesta', name: 'Tipo de la Apuesta' },
+        { id: 'Momio', name: 'Momio' },
+        { id: 'Cantidad', name: 'Cantidad' },
+        { id: 'lista-deportes', name: 'Deporte' },
+        { id: 'lista-ligas', name: 'Liga' }
+    ];
+
+    for (let field of campos) {
+        const value = document.getElementById(field.id).value;
+        if (!value || value === '0') {
+            alert(`Por favor no deje valores vacios`);
+            return;
         }
-    });
-    nuevodeporte.addEventListener('change', async () => {
-    const deporteid = nuevodeporte.value;
-    if (deporteid && deporteid !== '0') {
+    }
+        if (isNaN(document.getElementById('Momio').value) || isNaN(document.getElementById('Cantidad').value)) {
+            alert('Momio y Cantidad deben ser valores numéricos.');
+            return;
+        }
+
+        const formData = new FormData(form);
+        formData.append('usuario', userId);
+        formData.append('liga', ligaId);
+        formData.append('resultado', getSelectedResultados());
+
+        const data = Object.fromEntries(formData.entries());
+
         try {
-            const ligasResponse = await fetch(`http://localhost:4322/obtenerligas/${deporteid}`);
-            const ligas = await ligasResponse.json();
-            nuevaliga.innerHTML = '<option value="0">Seleccione una liga</option>';
-            ligas.forEach(liga => {
-                const option = document.createElement('option');
-                option.value = liga.id_liga;
-                option.textContent = liga.nombre_liga;
-                nuevaliga.appendChild(option);
+            const response = await fetch('http://localhost:4322/apuesta', {
+                method: 'POST',
+                body: JSON.stringify(data),
+                headers: { 'Content-Type': 'application/json' }
             });
+
+            if (response.ok) {
+                alert('Apuesta hecha con éxito');
+            } else {
+                const errorData = await response.json();
+                alert('Error al guardar la apuesta: ' + (errorData.message || 'Error desconocido'));
+            }
         } catch (error) {
-            console.error('Error obteniendo las ligas:', error);
+            console.error('Error en el envío del formulario:', error);
         }
-    } else {
-        nuevaliga.innerHTML = '<option value="0">Seleccione una liga</option>';
-    }
-});
-        const guardarButton = document.querySelector('.modal-footer button[type="submit"]');
-        guardarButton.addEventListener('click', async (event) => {
-    event.preventDefault();
-
-    const selectedDeporteId = nuevodeporte.value;
-    const selectedLigaId = nuevaliga.value;
-    const userId = localStorage.getItem('id_usuario');
-
-    if (selectedDeporteId === '0' || selectedLigaId === '0') {
-        alert('Por favor, seleccione un deporte y una liga.');
-        return;
     }
 
-    try {
-        const response = await fetch(`http://localhost:4322/guardarnuevaliga/${userId}/${selectedLigaId}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ userId, ligaId: selectedLigaId }),
+    // Get Selected Resultados
+    function getSelectedResultados() {
+        return Array.from(document.querySelectorAll('input[name="resultado"]:checked'))
+                    .map(checkbox => checkbox.value)
+                    .join(',');
+    }
+
+    // Handle Checkbox Change for Resultados
+    function handleCheckboxChange() {
+        document.querySelectorAll('input[name="resultado"]').forEach(box => {
+            if (box !== this) box.checked = false;
+        });
+    }
+
+    // Update Ligas Based on Selected Deporte
+    async function actualizarLigas() {
+        const selectedDeporteId = document.getElementById('lista-deportes').value;
+        const listaLigas = document.getElementById('lista-ligas');
+        const userId = localStorage.getItem('id_usuario');
+
+        if (selectedDeporteId) {
+            console.log(selectedDeporteId);
+            document.getElementById('depoid').textContent = `ID Deporte Seleccionado: ${selectedDeporteId}`;
+            try {
+                const response = await fetch(`http://localhost:4322/ligas/${userId}/${selectedDeporteId}`);
+                const ligas = await response.json();
+                popularLigas(listaLigas, ligas);
+            } catch (error) {
+                console.error('Error obteniendo las ligas:', error);
+            }
+        }
+    }
+
+    // Populate Ligas in Select
+    function popularLigas(selectElement, ligas) {
+        selectElement.innerHTML = '<option value="0">Seleccione una liga</option>';
+        ligas.forEach(liga => {
+            const option = document.createElement('option');
+            option.value = liga.id_liga;
+            option.textContent = liga.nombre_liga;
+            selectElement.appendChild(option);
+        });
+    }
+
+    // Setup Event Listeners for Modal
+    function cargar() {
+        const modal = document.getElementById('modal');
+        const nuevodeporte = document.getElementById('nueva-lista-deportes');
+        const nuevaliga = document.getElementById('nueva-lista-ligas');
+
+        document.getElementById('open-modal-button').addEventListener('click', async () => {
+            modal.classList.add('active');
+            await cargarDeportesModal(nuevodeporte);
         });
 
-        if (response.ok) {
-            alert('Nueva liga registrada con éxito');
+        document.getElementById('close-modal-button').addEventListener('click', () => {
             modal.classList.remove('active');
-        } else {
-            const errorData = await response.json();
-            alert(`Error al guardar la liga: ${errorData.message || 'Error desconocido'}`);
-        }
-    } catch (error) {
-        console.error('Error al guardar la nueva liga:', error);
-        alert('Error al guardar la nueva liga');
+        });
+
+        window.addEventListener('click', event => {
+            if (event.target === modal) modal.classList.remove('active');
+        });
+
+        nuevodeporte.addEventListener('change', () => actualizarLigasModal(nuevodeporte.value, nuevaliga));
+
+        document.querySelector('.modal-footer button[type="submit"]').addEventListener('click', handleSaveNewLiga);
     }
-});
+
+    async function cargarDeportesModal(selectElement) {
+        try {
+            const response = await fetch('http://localhost:4322/obtenerdeportes');
+            const deportes = await response.json();
+            popularDeportes(selectElement, deportes);
+        } catch (error) {
+            console.error('Error obteniendo los deportes:', error);
+        }
+    }
+
+    async function actualizarLigasModal(deporteId, selectElement) {
+        if (deporteId && deporteId !== '0') {
+            try {
+                const response = await fetch(`http://localhost:4322/obtenerligas/${deporteId}`);
+                const ligas = await response.json();
+                popularLigas(selectElement, ligas);
+            } catch (error) {
+                console.error('Error obteniendo las ligas:', error);
+            }
+        } else {
+            selectElement.innerHTML = '<option value="0">Seleccione una liga</option>';
+        }
+    }
+
+
+    async function handleNuevaLiga(event) {
+        event.preventDefault();
+
+        const selectedDeporteId = document.getElementById('nueva-lista-deportes').value;
+        const selectedLigaId = document.getElementById('nueva-lista-ligas').value;
+        const userId = localStorage.getItem('id_usuario');
+
+        if (selectedDeporteId === '0' || selectedLigaId === '0') {
+            alert('Por favor, seleccione un deporte y una liga.');
+            return;
+        }
+
+        try {
+            const response = await fetch(`http://localhost:4322/guardarnuevaliga/${userId}/${selectedLigaId}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId, ligaId: selectedLigaId }),
+            });
+
+            if (response.ok) {
+                alert('Nueva liga registrada con éxito');
+                document.getElementById('modal').classList.remove('active');
+            } else {
+                const errorData = await response.json();
+                alert(`Error al guardar la liga: ${errorData.message || 'Error desconocido'}`);
+            }
+        } catch (error) {
+            console.error('Error al guardar la nueva liga:', error);
+            alert('Error al guardar la nueva liga');
+        }
+    }
 </script>

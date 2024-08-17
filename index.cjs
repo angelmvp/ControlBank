@@ -8,7 +8,7 @@ const bodyParser = require('body-parser');
 const pool = new Pool({
   user: 'postgres',
   host: 'localhost',
-  password: '',
+  password: 'BD27-mVp+',
   database: 'prueba'
 });
 
@@ -97,11 +97,11 @@ app.post('/login', async (req, res) => {
   
   
   app.post('/apuesta', async (req, res) => {
-    const { usuario, liga, FechaApuesta, NombreDeApuesta, TipoDeLaApuesta, Momio, Cantidad, resultado } = req.body;
+    const { usuario, liga, FechaApuesta, Evento,DescripcionApuesta, TipoDeLaApuesta, Momio, Cantidad, resultado } = req.body;
     try {
-        const texto = `INSERT INTO apuesta(usuario_id, liga_id, fecha, nombre, tipo_apuesta, momio, cantidad_apostada, resultado)
-                        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`;
-        const valores = [usuario, liga, FechaApuesta, NombreDeApuesta, TipoDeLaApuesta, Momio, Cantidad, resultado];
+        const texto = `INSERT INTO apuesta(usuario_id, liga_id, fecha, evento,descripcion_apuesta, tipo_apuesta, momio, cantidad_apostada, resultado)
+                        VALUES ($1, $2, $3, $4, $5, $6, $7, $8,$9)`;
+        const valores = [usuario, liga, FechaApuesta, Evento, DescripcionApuesta, TipoDeLaApuesta, Momio, Cantidad, resultado];
         await pool.query(texto, valores);
         res.status(201).json({success:true});
     } catch (error) {
@@ -162,6 +162,21 @@ app.post('/guardarnuevaliga/:userId/:ligaId', async (req, res) => {
     } else {
       res.status(500).json({ success: false, message: 'Error interno del servidor' });
     }
+  }
+});
+
+
+app.get('/apuestas/:userId', async (req, res) => {
+  const { userId } = req.params;
+  try {
+      const texto = 'SELECT fecha, evento, descripcion_apuesta, momio, cantidad_apostada, resultado FROM apuesta WHERE usuario_id = $1';
+      const result = await pool.query(texto, [userId]);
+      console.log(userId);
+      res.json(result.rows);
+  } catch (err) {
+      console.error(err);
+      console.log("error")
+      res.status(500).send('Server Error');
   }
 });
 

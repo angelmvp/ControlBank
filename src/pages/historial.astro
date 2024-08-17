@@ -1,9 +1,22 @@
 ---
 import Boton from "../components/Boton.astro"
 import Layout from "../layouts/Layout.astro"
+import Apuesta from "../components/Apuesta.astro"
+
+const response = await fetch(`http://localhost:4322/apuestas/${1}`);
+const apuestas = await response.json();
 ---
 
 <Layout title="Historial">
-    <Boton href="menu" title="regresar" color="verde" />
-    
+    <Boton href="menu" title="Regresar" color="verde" />
+
+    {apuestas.length > 0 ? (
+        <div>
+            {apuestas.map(apuesta => (
+                <Apuesta {...apuesta} />
+            ))}
+        </div>
+    ) : (
+        <p>No hay apuestas disponibles.</p>
+    )}
 </Layout>
