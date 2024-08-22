@@ -1,22 +1,225 @@
 ---
-import Boton from "../components/Boton.astro"
-import Layout from "../layouts/Layout.astro"
-import Apuesta from "../components/Apuesta.astro"
+import Boton from "../components/Boton.astro";
+import Layout from "../layouts/Layout.astro";
+import Apuesta from "../components/Apuesta.astro";
+import FormLabelRequired from "../components/Apuestalabel.astro";
+let apuestas = [];
 
-const response = await fetch(`http://localhost:4322/apuestas/${1}`);
-const apuestas = await response.json();
 ---
 
 <Layout title="Historial">
     <Boton href="menu" title="Regresar" color="verde" />
 
-    {apuestas.length > 0 ? (
-        <div>
-            {apuestas.map(apuesta => (
-                <Apuesta {...apuesta} />
-            ))}
-        </div>
-    ) : (
-        <p>No hay apuestas disponibles.</p>
-    )}
+    <h1>Filtrar Resultados de Apuestas</h1>
+
+    
+
+    <form id="filtroApuestas">
+        <article>
+            <label for="deportes">Escoge un deporte:</label>
+            <select id="lista-deportes">
+                <option value="0">Seleccione un Deporte</option>
+            </select>
+        </article>
+        <article>
+            <label for="ligas">Escoge una liga:</label>
+            <select id="lista-ligas"></select>
+        </article>
+        <article>
+            <FormLabelRequired tipo="date" id="FechaInicio" nombre="FechaInicio" descripcion="Fecha de Inicio"/>
+        </article>
+        <article>
+            <FormLabelRequired tipo="date" id="FechaFin" nombre="FechaFin" descripcion="Fecha de Final"/>
+        </article>
+        <article>
+            <label for="tipo">Escoge un tipo de apuesta:</label>
+            <select id="lista-tipos"></select>
+        </article>
+        <button type="button" onclick="handleFiltrar();">Filtrar</button>
+    </form>
+    <div id="resultados">
+    </div>
+
+    <p id="user"></p>
+    <p id="depoid"></p>
+    <p id="ligaid"></p>
+    <div id="mostrar"></div>
+    <div id="resultados"></div>
 </Layout>
+
+<script client:load>
+    document.addEventListener('DOMContentLoaded', init);
+
+    async function init() {
+        const userId = localStorage.getItem('id_usuario');
+        if (userId) {
+            MostrarIdUsuario(userId);
+            await cargarDeportes(userId);
+            setupEventListeners();
+        } else {
+            console.error('ID de usuario no encontrado.');
+        }
+    }
+
+    function MostrarIdUsuario(userId) {
+        const userIdElemento = document.getElementById('user');
+        userIdElemento.textContent = `Usuario ID: ${userId}`;
+    }
+    
+    async function filtrarApuestas() {
+        const userId = localStorage.getItem('id_usuario');
+        const deporteId = document.getElementById('lista-deportes').value;
+        const ligaId = document.getElementById('lista-ligas').value;
+        const fechaInicio = document.getElementById('FechaInicio').value;
+        const fechaFin = document.getElementById('FechaFin').value;
+        const tipoApuesta = document.getElementById('lista-tipos').value;
+        const mostrar = document.getElementById('resultados');
+
+        const params = new URLSearchParams({
+            liga: ligaId,
+            deporte: deporteId !== '0' ? deporteId : '',
+            fecha_inicio: fechaInicio,
+            fecha_fin: fechaFin,
+            tipo_apuesta: tipoApuesta !== '0' ? tipoApuesta : ''
+        });
+
+        try {
+            const response = await fetch(`http://localhost:4322/apuestaschat/${userId}?${params.toString()}`);
+
+
+            if (!response.ok) {
+                throw new Error(`Error en la solicitud: ${response.status}`);
+            }
+
+            const apuestas = await response.json();
+            mostrar.innerHTML = ''; // Limpia resultados previos
+
+        if (apuestas.length > 0) {
+            apuestas.forEach(apuesta => {
+                const apuestaElement = document.createElement('div');
+                apuestaElement.innerHTML = `
+                    <p>Fecha: ${new Date(apuesta.fecha).toLocaleDateString()}</p>
+                    <p>Evento: ${apuesta.evento}</p>
+                    <p>Descripción: ${apuesta.descripcion_apuesta}</p>
+                    <p>Momio: ${apuesta.momio}</p>
+                    <p>Cantidad Apostada: ${apuesta.cantidad_apostada}</p>
+                    <p>Resultado: ${apuesta.resultado}</p>
+                `;
+                mostrar.appendChild(apuestaElement);
+            });
+        } else {
+            mostrar.innerHTML = '<p>No hay apuestas disponibles.</p>';
+        }
+        } catch (error) {
+            console.error('Error obteniendo las apuestas:', error);
+            return [];
+        }
+    }
+    async function handleFiltrar() {
+    apuestas = await filtrarApuestas();
+    }   
+
+    function calcularGanancia(apuesta) {
+        let ganancia = 0;
+        if (apuesta.resultado === 'ganada') {
+            if (apuesta.momio > 0) {
+                ganancia = apuesta.cantidad_apostada * (apuesta.momio / 100) + apuesta.cantidad_apostada;
+            } else {
+                ganancia = apuesta.cantidad_apostada * (100 / Math.abs(apuesta.momio)) + apuesta.cantidad_apostada;
+            }
+        } else if (apuesta.resultado === 'push') {
+            ganancia = apuesta.cantidad_apostada;
+        }
+        return ganancia;
+    }
+
+    async function cargarDeportes(userId) {
+        const listaDeportes = document.getElementById('lista-deportes');
+        try {
+            const response = await fetch(`http://localhost:4322/deportes/${userId}`);
+            const deportes = await response.json();
+            popularDeportes(listaDeportes, deportes);
+        } catch (error) {
+            console.error('Error obteniendo los deportes:', error);
+        }
+    }
+
+    function popularDeportes(selectElement, deportes) {
+        selectElement.innerHTML = '<option value="0">Seleccione un Deporte</option>';
+        deportes.forEach(deporte => {
+            const option = document.createElement('option');
+            option.value = deporte.id_deporte;
+            option.textContent = deporte.nombre_deporte;
+            selectElement.appendChild(option);
+        });
+    }
+
+    function setupEventListeners() {
+        const deportesElement = document.getElementById('lista-deportes');
+        const ligasElement = document.getElementById('lista-ligas');
+
+        if (deportesElement) {
+            deportesElement.addEventListener('change', actualizarLigas);
+        } else {
+            console.error('Elemento lista-deportes no encontrado.');
+        }
+
+        if (ligasElement) {
+            ligasElement.addEventListener('change', actualizarTipos);
+        } else {
+            console.error('Elemento lista-ligas no encontrado.');
+        }
+    }
+
+    async function actualizarLigas() {
+        const selectedDeporteId = document.getElementById('lista-deportes').value;
+        const listaLigas = document.getElementById('lista-ligas');
+        const userId = localStorage.getItem('id_usuario');
+
+        if (selectedDeporteId) {
+            try {
+                const response = await fetch(`http://localhost:4322/ligas/${userId}/${selectedDeporteId}`);
+                const ligas = await response.json();
+                popularLigas(listaLigas, ligas);
+            } catch (error) {
+                console.error('Error obteniendo las ligas:', error);
+            }
+        }
+    }
+
+    function popularLigas(selectElement, ligas) {
+        selectElement.innerHTML = '<option value=>Seleccione una liga</option>';
+        ligas.forEach(liga => {
+            const option = document.createElement('option');
+            option.value = liga.id_liga;
+            option.textContent = liga.nombre_liga;
+            selectElement.appendChild(option);
+        });
+    }
+
+    async function actualizarTipos() {
+        const listaTipos = document.getElementById('lista-tipos');
+        const ligaId = document.getElementById('lista-ligas').value;
+        const userId = localStorage.getItem('id_usuario');
+
+        if (ligaId && listaTipos) {
+            try {
+                const response = await fetch(`http://localhost:4322/tipos/${userId}/${ligaId}`);
+                const tipos = await response.json();
+                popularTipos(listaTipos, tipos);
+            } catch (error) {
+                console.error('Error obteniendo los tipos:', error);
+            }
+        }
+    }
+
+    function popularTipos(selectElement, tipos) {
+        selectElement.innerHTML = '<option value="0">Seleccione un tipo</option>';
+        tipos.forEach(tipo => {
+            const option = document.createElement('option');
+            option.value = tipo.tipo_apuesta;
+            option.textContent = tipo.tipo_apuesta;
+            selectElement.appendChild(option);
+        });
+    }
+</script>

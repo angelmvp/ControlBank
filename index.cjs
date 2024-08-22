@@ -97,18 +97,19 @@ app.post('/login', async (req, res) => {
   
   
   app.post('/apuesta', async (req, res) => {
-    const { usuario, liga, FechaApuesta, Evento,DescripcionApuesta, TipoDeLaApuesta, Momio, Cantidad, resultado } = req.body;
+    const { usuario, liga, FechaApuesta, Evento, DescripcionApuesta, TipoDeLaApuesta, Momio, Cantidad, resultado, parlayId } = req.body;
     try {
-        const texto = `INSERT INTO apuesta(usuario_id, liga_id, fecha, evento,descripcion_apuesta, tipo_apuesta, momio, cantidad_apostada, resultado)
-                        VALUES ($1, $2, $3, $4, $5, $6, $7, $8,$9)`;
-        const valores = [usuario, liga, FechaApuesta, Evento, DescripcionApuesta, TipoDeLaApuesta, Momio, Cantidad, resultado];
+        const texto = `INSERT INTO apuesta(usuario_id, liga_id, fecha, evento, descripcion_apuesta, tipo_apuesta, momio, cantidad_apostada, resultado, parlay_id)
+                        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`;
+        const valores = [usuario, liga, FechaApuesta, Evento, DescripcionApuesta, TipoDeLaApuesta, Momio, Cantidad, resultado, parlayId || null];
         await pool.query(texto, valores);
-        res.status(201).json({success:true});
+        res.status(201).json({ success: true });
     } catch (error) {
         console.error('Error al registrar apuesta:', error);
-        res.status(500).json({ success: false, message: 'Error interno dsssel servidor' });
+        res.status(500).json({ success: false, message: 'Error interno del servidor' });
     }
 });
+
 
 app.get('/obtenerdeportes', async (req,res) =>{
   const{deporteId,deportNombre}=req.params;
@@ -164,21 +165,85 @@ app.post('/guardarnuevaliga/:userId/:ligaId', async (req, res) => {
     }
   }
 });
-
-
-app.get('/apuestas/:userId', async (req, res) => {
-  const { userId } = req.params;
+app.get('/tipos/:userId/:ligaId', async (req, res) => {
+  const { userId, ligaId } = req.params;
   try {
-      const texto = 'SELECT fecha, evento, descripcion_apuesta, momio, cantidad_apostada, resultado FROM apuesta WHERE usuario_id = $1';
-      const result = await pool.query(texto, [userId]);
-      console.log(userId);
+      const texto = 'SELECT DISTINCT tipo_apuesta FROM apuesta WHERE usuario_id = $1 AND liga_id = $2';
+      const result = await pool.query(texto, [userId, ligaId]);
       res.json(result.rows);
   } catch (err) {
       console.error(err);
-      console.log("error")
       res.status(500).send('Server Error');
   }
 });
+
+
+
+app.get('/apuestaschat/:userId', async (req, res) => {
+  const { userId } = req.params;
+  const { liga, deporte, fecha_inicio, fecha_fin, tipo_apuesta } = req.query;
+
+  let query = `
+    SELECT fecha, evento, descripcion_apuesta, momio, cantidad_apostada, resultado 
+    FROM apuesta 
+    WHERE usuario_id = $1`;
+  const queryParams = [userId];
+
+  let paramIndex = 2;
+
+  if (liga) {
+    query += ` AND liga_id = $${paramIndex}`;
+    queryParams.push(liga);
+    paramIndex++;
+  }
+  if (deporte) {
+    query += ` AND liga_id IN (SELECT id_liga FROM liga WHERE deporte_id = $${paramIndex})`;
+    queryParams.push(deporte);
+    paramIndex++;
+  }
+  if (fecha_inicio) {
+    query += ` AND fecha >= $${paramIndex}`;
+    queryParams.push(fecha_inicio);
+    paramIndex++;
+  }
+  if (fecha_fin) {
+    query += ` AND fecha <= $${paramIndex}`;
+    queryParams.push(fecha_fin);
+    paramIndex++;
+  }
+  if (tipo_apuesta) {
+    query += ` AND tipo_apuesta = $${paramIndex}`;
+    queryParams.push(tipo_apuesta);
+  }
+
+  try {
+    const result = await pool.query(query, queryParams);
+    console.log(query,queryParams);
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Server Error');
+  }
+});
+
+
+
+app.post('/parlay', async (req, res) => {
+  const { fecha, momio, cantidad_apostada, resultado, usuarioId } = req.body;
+  const texto = `INSERT INTO parlay(fecha, momio, cantidad_apostada, resultado, usuario_id) 
+                 VALUES ($1, $2, $3, $4, $5) RETURNING id_parlay;`;
+  try {
+    const result = await pool.query(texto, [fecha, momio, cantidad_apostada, resultado, usuarioId]);
+    console.log(result.rows[0].id_parlay);
+    const idParlay = result.rows[0].id_parlay; // Recupera el ID del parlay recién creado
+    res.status(201).json({ success: true, id_parlay: idParlay });
+  } catch (error) {
+    console.error('Error al insertar:', error);
+    res.status(500).json({ success: false, message: 'Error interno del servidor' });
+  }
+});
+
+
 
 
   

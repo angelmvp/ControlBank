@@ -1,0 +1,77 @@
+---
+interface BetProps {
+  fecha: Date;
+  evento: string;
+  descripcion: string;
+  momio: number;
+  cantidad_apostada: number;
+  resultado: 'ganada' | 'perdida' | 'push';
+}
+
+interface ParlayProps {
+  apuestas: BetProps[];
+}
+
+const { apuestas } = Astro.props;
+
+// Function to convert American odds to decimal odds
+function convertToDecimalOdds(americanOdds: number): number {
+  if (americanOdds > 0) {
+    return (americanOdds / 100) + 1;
+  } else {
+    return (100 / Math.abs(americanOdds)) + 1;
+  }
+}
+
+// Calculate overall odds for the parlay
+let overallOdds = apuestas.reduce((total, apuesta) => {
+  return total * convertToDecimalOdds(apuesta.momio);
+}, 1);
+
+// Check if all bets are won to determine if the parlay is won
+let parlayGanada = apuestas.every(apuesta => apuesta.resultado === 'ganada');
+let ganancia = parlayGanada ? apuestas[0].cantidad_apostada * (overallOdds - 1) : 0;
+let totalApostado = apuestas.reduce((sum, apuesta) => sum + apuesta.cantidad_apostada, 0);
+---
+
+<div class="parlay">
+  <h2>Detalle del Parlay</h2>
+  {apuestas.map(apuesta => (
+    <div class="apuesta">
+      <p>Fecha: {apuesta.fecha}</p>
+      <p>Evento: {apuesta.evento}</p>
+      <p>Descripción: {apuesta.descripcion}</p>
+      <p>Momio: {apuesta.momio}</p>
+      <p>Cantidad Apostada: {apuesta.cantidad_apostada}</p>
+      <p>Resultado: {apuesta.resultado}</p>
+    </div>
+  ))}
+  <hr />
+  <p>Total Apostado: {totalApostado}</p>
+  <p>Ganancia Potencial: {ganancia}</p>
+  <p>Parlay Ganada: {parlayGanada ? 'Sí' : 'No'}</p>
+</div>
+
+<style>
+.parlay {
+  border: 1px solid #ccc;
+  padding: 16px;
+  border-radius: 8px;
+  background-color: var(--bg-light-gray);
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.parlay h2 {
+  margin-top: 0;
+  font-size: 1.5rem;
+}
+
+.parlay .apuesta {
+  margin-bottom: 16px;
+}
+
+.parlay p {
+  margin: 8px 0;
+}
+</style>

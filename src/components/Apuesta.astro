@@ -10,10 +10,12 @@ interface Props {
 
 const { fecha, evento, descripcion, momio, cantidad_apostada, resultado } = Astro.props;
 
-// Calculate gain based on the result
 let ganancia: number;
 if (resultado === 'ganada') {
-  ganancia = cantidad_apostada * (momio / 100) + cantidad_apostada; // Assuming momio is the odds in a format like +100
+  if(momio>0)
+    ganancia = cantidad_apostada * (momio / 100) + cantidad_apostada;
+  else
+  ganancia = cantidad_apostada * (100 / Math.abs(momio)) + cantidad_apostada;
 } else if (resultado === 'perdida') {
   ganancia = 0;
 } else if (resultado === 'push') {
@@ -23,31 +25,57 @@ if (resultado === 'ganada') {
 
 <div class="apuesta">
   <h2>Detalle de Apuesta</h2>
-  <p>Fecha:  {fecha}</p>
-  <p> Evento:  {evento}</p>
-  <p> Descripción:  {descripcion}</p>
-  <p> Momio:  {momio}</p>
-  <p> Cantidad Apostada:  {cantidad_apostada}</p>
-  <p> Resultado:  {resultado}</p>
-  <p> Ganancia:  {ganancia}</p>
+  <article>
+    <p> Evento:  {evento}</p>
+  </article>
+  <article class="flex2"id="descripcion">
+    <p> Descripción:  {descripcion}</p>
+    <p> Momio:  {momio}</p>
+  </article>
+  <article class="flex2">
+    <p>Fecha:  {fecha}</p>
+    <p> Resultado:  {resultado}</p>
+  </article>
+  <article class="flex2" id="dinero">
+    <p> Cantidad Apostada:  {cantidad_apostada}</p>
+    <p> Ganancia:  {ganancia}</p>
+  </article>
 </div>
 
 <style>
 .apuesta {
-  border: 1px solid #ccc;
-  padding: 16px;
-  border-radius: 8px;
-  background-color: var(--bg-light-gray);
-  max-width: 400px;
-  margin: 0 auto;
+  background-color: #f9f9f9; /* Fondo claro para un look moderno */
+  border-radius: 8px; /* Bordes redondeados */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Sombra sutil */
+  padding: 20px; /* Espaciado interno */
+  max-width: 400px; /* Ancho máximo */
+  margin: 20px auto; /* Centrar y espaciado externo */
+  font-family: 'Arial', sans-serif; /* Fuente limpia */
+  color: #333; /* Color de texto oscuro */
 }
 
 .apuesta h2 {
-  margin-top: 0;
-  font-size: 1.5rem;
+  font-size: 24px; /* Tamaño de fuente más grande para el título */
+  margin-bottom: 15px; /* Espaciado debajo del título */
+  color: #007BFF; /* Color del título */
 }
 
 .apuesta p {
-  margin: 8px 0;
+  font-size: 16px; /* Tamaño de fuente para el texto */
+  margin-bottom: 10px; /* Espaciado debajo de cada párrafo */
+  line-height: 1.6; /* Altura de línea para mejor legibilidad */
 }
+
+.apuesta p strong {
+  color: #007BFF; /* Resalta elementos clave */
+}
+
+article.flex2{
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: center;
+  justify-content: space-between;
+}
+
 </style>

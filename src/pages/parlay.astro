@@ -1,11 +1,17 @@
 ---
 import Boton from "../components/Boton.astro"
 import Layout from "../layouts/Layout.astro"
+import FormLabelRequired from "../components/Apuestalabel.astro"
+import BotonSubmit from "../components/BotonSubmit.astro"
 ---
 
 <Layout title="Nuevo Parlay">
     <Boton href="menu" title="regresar" color="verde" />
-    <form id="parlay-form" action="/submit-parlay" method="post" class="form-parlay">
+    <FormLabelRequired tipo="text" id="cantidad" nombre="cantidad" descripcion="Cantidad"/>
+
+    <BotonSubmit typeButton="button" color="verde" title="registrar parlay" />
+    <form id="parlay-form" class="form-parlay">
+        Form
         <div id="bet-forms">
             <!-- Initial Bet Form -->
             <div class="bet-form" data-index="1">
@@ -15,8 +21,11 @@ import Layout from "../layouts/Layout.astro"
                 <label for="Fecha1">Fecha de la Apuesta</label>
                 <input type="date" id="Fecha1" name="FechaApuesta1" required>
 
-                <label for="NombreApuesta1">Nombre de la Apuesta</label>
-                <input type="text" id="NombreApuesta1" name="NombreDeApuesta1" required>
+                <label for="Evento1">Nombre de la Apuesta</label>
+                <input type="text" id="Evento" name="Evento" required>
+
+                <label for="DescripcionApuesta1">Nombre de la Apuesta</label>
+                <input type="text" id="DescripcionApuesta1" name="DescripcionApuesta1" required>
 
                 <label for="TipoApuesta1">Tipo de la Apuesta</label>
                 <input type="text" id="TipoApuesta1" name="TipoDeLaApuesta1" required>
@@ -56,8 +65,11 @@ import Layout from "../layouts/Layout.astro"
                 <label for="Fecha1">Fecha de la Apuesta</label>
                 <input type="date" id="Fecha1" name="FechaApuesta1" required>
 
-                <label for="NombreApuesta1">Nombre de la Apuesta</label>
-                <input type="text" id="NombreApuesta1" name="NombreDeApuesta1" required>
+                <label for="Evento1">Nombre de la Apuesta</label>
+                <input type="text" id="Evento" name="Evento" required>
+
+                <label for="DescripcionApuesta1">Nombre de la Apuesta</label>
+                <input type="text" id="DescripcionApuesta1" name="DescripcionApuesta1" required>
 
                 <label for="TipoApuesta1">Tipo de la Apuesta</label>
                 <input type="text" id="TipoApuesta1" name="TipoDeLaApuesta1" required>
@@ -180,3 +192,59 @@ import Layout from "../layouts/Layout.astro"
     background-color: var(--green-dark);
 }
 </style>
+
+<script>
+    async function handleSubmit(event) {
+    event.preventDefault();
+
+    const form = event.target;
+    const userId = localStorage.getItem('id_usuario');
+
+    try {
+        // Paso 1: Crear el Parlay
+        const parlayResponse = await fetch('http://localhost:4322/parlay', {
+            method: 'POST',
+            body: JSON.stringify({
+                fecha: new Date().toISOString().split('T')[0], // Fecha actual
+                momio: "calcular momio",
+                cantidad_apostada: document.getElementById('cantidad').value,
+                resultado: 'ganada', // Puedes ajustar esto según la lógica
+                usuarioId: userId
+            }),
+            headers: { 'Content-Type': 'application/json' }
+        });
+
+        if (!parlayResponse.ok) {
+            throw new Error('Error al crear el parlay');
+        }
+
+        const parlayData = await parlayResponse.json();
+        const parlayId = parlayData.id_parlay; // Suponiendo que el backend devuelve el ID
+
+        // Paso 2: Registrar cada Apuesta
+        const betForms = document.querySelectorAll('.bet-form');
+        for (let form of betForms) {
+            const formData = new FormData(form);
+            formData.append('usuario_id', userId);
+            formData.append('parlay_id', parlayId);
+
+            const data = Object.fromEntries(formData.entries());
+
+            const apuestaResponse = await fetch('http://localhost:4322/apuesta', {
+                method: 'POST',
+                body: JSON.stringify(data),
+                headers: { 'Content-Type': 'application/json' }
+            });
+
+            if (!apuestaResponse.ok) {
+                throw new Error('Error al guardar la apuesta');
+            }
+        }
+        alert('Parlay y apuestas registradas con éxito');
+    } catch (error) {
+        console.error('Error en el envío del formulario:', error);
+        alert('Error al registrar el parlay: ' + error.message);
+    }
+}
+
+</script>
