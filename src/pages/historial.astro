@@ -12,7 +12,10 @@ let apuestas = [];
 
     <h1>Filtrar Resultados de Apuestas</h1>
 
-    
+    <p id="ganancia"></p>
+    <p id="ganadas"></p>
+    <p id="perdidas"></p>
+    <p id="push"></p>
 
     <form id="filtroApuestas">
         <article>
@@ -75,6 +78,7 @@ let apuestas = [];
         const tipoApuesta = document.getElementById('lista-tipos').value;
         const mostrar = document.getElementById('resultados');
 
+
         const params = new URLSearchParams({
             liga: ligaId,
             deporte: deporteId !== '0' ? deporteId : '',
@@ -107,6 +111,7 @@ let apuestas = [];
                 `;
                 mostrar.appendChild(apuestaElement);
             });
+            calcularInfo(apuestas);  
         } else {
             mostrar.innerHTML = '<p>No hay apuestas disponibles.</p>';
         }
@@ -117,21 +122,41 @@ let apuestas = [];
     }
     async function handleFiltrar() {
     apuestas = await filtrarApuestas();
-    }   
+    }  
 
-    function calcularGanancia(apuesta) {
+    function calcularInfo(apuestas) {
+        const mostrarGanancia=document.getElementById('ganancia');
+        const mostrarGanadas=document.getElementById('ganadas');
+        const mostrarPerdidas=document.getElementById('perdidas');
+        const mostrarPush=document.getElementById('push');
+        let ganancia_total = 0;
+        let conteo_ganadas=0;
+        let conteo_perdidas=0;
+        let conteo_push=0;
+
+    apuestas.forEach(apuesta => {
         let ganancia = 0;
         if (apuesta.resultado === 'ganada') {
             if (apuesta.momio > 0) {
-                ganancia = apuesta.cantidad_apostada * (apuesta.momio / 100) + apuesta.cantidad_apostada;
+                ganancia = apuesta.cantidad_apostada * (apuesta.momio / 100);
             } else {
-                ganancia = apuesta.cantidad_apostada * (100 / Math.abs(apuesta.momio)) + apuesta.cantidad_apostada;
+                ganancia = apuesta.cantidad_apostada * (100 / Math.abs(apuesta.momio));
             }
-        } else if (apuesta.resultado === 'push') {
-            ganancia = apuesta.cantidad_apostada;
+            conteo_ganadas++;
+            ganancia_total += ganancia;
+        } else if (apuesta.resultado === 'perdida') {
+            ganancia_total -= apuesta.cantidad_apostada;
+            conteo_perdidas++;
+        }else if (apuesta.resultado==='push'){
+            conteo_push++;
         }
-        return ganancia;
-    }
+    });
+        mostrarGanancia.innerHTML=`Ganancia total = ${ganancia_total}`;
+        mostrarGanadas.innerHTML=`Total Ganadas = ${conteo_ganadas}`;
+        mostrarPerdidas.innerHTML=`Total Perdidas = ${conteo_perdidas}`;
+        mostrarPush.innerHTML=`Total Push = ${conteo_push}`;
+}
+
 
     async function cargarDeportes(userId) {
         const listaDeportes = document.getElementById('lista-deportes');
@@ -160,6 +185,8 @@ let apuestas = [];
 
         if (deportesElement) {
             deportesElement.addEventListener('change', actualizarLigas);
+            deportesElement.addEventListener('change', actualizarTipos);
+            
         } else {
             console.error('Elemento lista-deportes no encontrado.');
         }
@@ -199,12 +226,12 @@ let apuestas = [];
 
     async function actualizarTipos() {
         const listaTipos = document.getElementById('lista-tipos');
-        const ligaId = document.getElementById('lista-ligas').value;
+        const selectedDeporteId = document.getElementById('lista-deportes').value;
         const userId = localStorage.getItem('id_usuario');
 
-        if (ligaId && listaTipos) {
+        if (selectedDeporteId && listaTipos) {
             try {
-                const response = await fetch(`http://localhost:4322/tipos/${userId}/${ligaId}`);
+                const response = await fetch(`http://localhost:4322/tipos/${userId}/${selectedDeporteId}`);
                 const tipos = await response.json();
                 popularTipos(listaTipos, tipos);
             } catch (error) {

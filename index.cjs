@@ -165,11 +165,11 @@ app.post('/guardarnuevaliga/:userId/:ligaId', async (req, res) => {
     }
   }
 });
-app.get('/tipos/:userId/:ligaId', async (req, res) => {
-  const { userId, ligaId } = req.params;
+app.get('/tipos/:userId/:deporteId', async (req, res) => {
+  const { userId, deporteId } = req.params;
   try {
-      const texto = 'SELECT DISTINCT tipo_apuesta FROM apuesta WHERE usuario_id = $1 AND liga_id = $2';
-      const result = await pool.query(texto, [userId, ligaId]);
+      const texto = 'SELECT DISTINCT liga_id,tipo_apuesta FROM apuesta WHERE usuario_id = $1 AND liga_id in (select id_liga from liga where deporte_id=$2)';
+      const result = await pool.query(texto, [userId, deporteId]);
       res.json(result.rows);
   } catch (err) {
       console.error(err);
@@ -218,7 +218,6 @@ app.get('/apuestaschat/:userId', async (req, res) => {
 
   try {
     const result = await pool.query(query, queryParams);
-    console.log(query,queryParams);
     res.json(result.rows);
   } catch (err) {
     console.error(err);

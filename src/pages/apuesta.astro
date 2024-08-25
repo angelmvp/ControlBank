@@ -229,11 +229,17 @@ import BotonSubmit from "../components/BotonSubmit.astro"
             alert('Momio y Cantidad deben ser valores numéricos.');
             return;
         }
+        const evento = document.getElementById('Evento').value.toUpperCase();
+        const descripcionApuesta = document.getElementById('DescripcionApuesta').value.toUpperCase();
+        const tipoApuesta = document.getElementById('TipoApuesta').value.toUpperCase();
 
         const formData = new FormData(form);
-        formData.append('usuario', userId);
-        formData.append('liga', ligaId);
-        formData.append('resultado', getSelectedResultados());
+            formData.set('Evento', evento);
+            formData.set('DescripcionApuesta', descripcionApuesta);
+            formData.set('TipoApuesta', tipoApuesta);
+            formData.append('usuario', userId);
+            formData.append('liga', ligaId);
+            formData.append('resultado', getSelectedResultados());
 
         const data = Object.fromEntries(formData.entries());
 
@@ -246,6 +252,7 @@ import BotonSubmit from "../components/BotonSubmit.astro"
 
             if (response.ok) {
                 alert('Apuesta hecha con éxito');
+                form.reset();
             } else {
                 const errorData = await response.json();
                 alert('Error al guardar la apuesta: ' + (errorData.message || 'Error desconocido'));
@@ -262,14 +269,12 @@ import BotonSubmit from "../components/BotonSubmit.astro"
                     .join(',');
     }
 
-    // Handle Checkbox Change for Resultados
     function handleCheckboxChange() {
         document.querySelectorAll('input[name="resultado"]').forEach(box => {
             if (box !== this) box.checked = false;
         });
     }
 
-    // Update Ligas Based on Selected Deporte
     async function actualizarLigas() {
         const selectedDeporteId = document.getElementById('lista-deportes').value;
         const listaLigas = document.getElementById('lista-ligas');
