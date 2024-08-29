@@ -1,3 +1,14 @@
+# Control de Bank
+
+Dentro de Esta aplicacion se podra tener a disposicion un control de Bank donde se podra tener registrado y guardado, los detalles de un evento realizado.
+## Filtrado de resultados
+Dentro de la aplicacion se tiene una opcion para poder visualizar todos los eventos realizados, se podra realizar el filtro por fecha, por deporte, por liga, o ya sea por eventos ganados o perdidos, al igual como el tipo de evento al cual se haya realizado
+
+
+
+
+
+
 # Astro Starter Kit: Basics
 
 ```sh
