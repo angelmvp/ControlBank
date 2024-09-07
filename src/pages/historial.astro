@@ -11,12 +11,12 @@ let apuestas = [];
     <Boton href="menu" title="Regresar" color="verde" />
 
     <h1>Filtrar Resultados de Apuestas</h1>
-
+    <div id="resumen">
     <p id="ganancia"></p>
     <p id="ganadas"></p>
     <p id="perdidas"></p>
     <p id="push"></p>
-
+    </div>
     <form id="filtroApuestas">
         <article>
             <label for="deportes">Escoge un deporte:</label>
@@ -50,6 +50,24 @@ let apuestas = [];
     <div id="resultados"></div>
 </Layout>
 
+<style>
+#resumen{
+    display: flex;
+    flex-direction: row;
+    margin: 20px auto;
+    width: 80%;
+    padding: 20px;
+    align-items: center;
+
+    background-color: rgb(155, 196, 139);
+}
+#resumen>p{
+background-color: rgb(148, 148, 209);
+padding: 22px;
+margin: 15px;   
+border-radius: 25px;
+}
+</style>
 <script client:load>
     document.addEventListener('DOMContentLoaded', init);
 
@@ -68,58 +86,144 @@ let apuestas = [];
         const userIdElemento = document.getElementById('user');
         userIdElemento.textContent = `Usuario ID: ${userId}`;
     }
-    
+    function formatearFecha(fechaISO) {
+    const opciones = { day: 'numeric', month: 'long', year: 'numeric' };
+    const fecha = new Date(fechaISO);
+    return fecha.toLocaleDateString('es-ES', opciones);
+}
     async function filtrarApuestas() {
-        const userId = localStorage.getItem('id_usuario');
-        const deporteId = document.getElementById('lista-deportes').value;
-        const ligaId = document.getElementById('lista-ligas').value;
-        const fechaInicio = document.getElementById('FechaInicio').value;
-        const fechaFin = document.getElementById('FechaFin').value;
-        const tipoApuesta = document.getElementById('lista-tipos').value;
-        const mostrar = document.getElementById('resultados');
+    const userId = localStorage.getItem('id_usuario');
+    const deporteId = document.getElementById('lista-deportes').value;
+    const ligaId = document.getElementById('lista-ligas').value;
+    const fechaInicio = document.getElementById('FechaInicio').value;
+    const fechaFin = document.getElementById('FechaFin').value;
+    const tipoApuesta = document.getElementById('lista-tipos').value;
+    const mostrar = document.getElementById('resultados');
 
+    const params = new URLSearchParams({
+        liga: ligaId,
+        deporte: deporteId !== '0' ? deporteId : '',
+        fecha_inicio: fechaInicio,
+        fecha_fin: fechaFin,
+        tipo_apuesta: tipoApuesta !== '0' ? tipoApuesta : ''
+    });
 
-        const params = new URLSearchParams({
-            liga: ligaId,
-            deporte: deporteId !== '0' ? deporteId : '',
-            fecha_inicio: fechaInicio,
-            fecha_fin: fechaFin,
-            tipo_apuesta: tipoApuesta !== '0' ? tipoApuesta : ''
-        });
+    try {
+        const response = await fetch(`http://localhost:4322/apuestaschat/${userId}?${params.toString()}`);
+        if (!response.ok) {
+            throw new Error(`Error en la solicitud: ${response.status}`);
+        }
 
-        try {
-            const response = await fetch(`http://localhost:4322/apuestaschat/${userId}?${params.toString()}`);
-
-
-            if (!response.ok) {
-                throw new Error(`Error en la solicitud: ${response.status}`);
-            }
-
-            const apuestas = await response.json();
-            mostrar.innerHTML = ''; // Limpia resultados previos
+        const apuestas = await response.json();
+        mostrar.innerHTML = ''; // Limpia resultados previos
 
         if (apuestas.length > 0) {
             apuestas.forEach(apuesta => {
+                const ganancia = calcularGanancia(apuesta.momio, apuesta.cantidad_apostada, apuesta.resultado);
+                const color = obtenerColor(apuesta.resultado);
+
                 const apuestaElement = document.createElement('div');
+                apuestaElement.classList.add('apuesta');
                 apuestaElement.innerHTML = `
-                    <p>Fecha: ${new Date(apuesta.fecha).toLocaleDateString()}</p>
-                    <p>Evento: ${apuesta.evento}</p>
-                    <p>Descripción: ${apuesta.descripcion_apuesta}</p>
-                    <p>Momio: ${apuesta.momio}</p>
-                    <p>Cantidad Apostada: ${apuesta.cantidad_apostada}</p>
-                    <p>Resultado: ${apuesta.resultado}</p>
+                    <div id="${color}">
+                        <h2>Detalle de Apuesta</h2>
+                    </div>
+                    <article>
+                        <p> Evento: ${apuesta.evento}</p>
+                    </article>
+                    <article class="flex2" id="descripcion">
+                        <p> Descripción: ${apuesta.descripcion_apuesta}</p>
+                        <p> Momio: ${apuesta.momio}</p>
+                    </article>
+                    <article class="flex2">
+                        <p>Fecha:${formatearFecha(apuesta.fecha)}</p>
+                        <p> ${apuesta.resultado}</p>
+                    </article>
+                    <article class="flex2" id="dinero">
+                        <p> Cantidad Apostada: ${apuesta.cantidad_apostada}</p>
+                        <p> Ganancia: ${ganancia}</p>
+                    </article>
+                    
+<style>
+.apuesta {
+  background-color: #dce2a7; /* Fondo claro para un look moderno */
+  border-radius: 25px; /* Bordes redondeados */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Sombra sutil */
+  padding: 20px; /* Espaciado interno */
+  max-width: 400px; /* Ancho máximo */
+  margin: 20px auto; /* Centrar y espaciado externo */
+  color: #333; /* Color de texto oscuro */
+}
+
+.apuesta h2 {
+  font-size: 24px; /* Tamaño de fuente más grande para el título */
+  margin-bottom: 15px; /* Espaciado debajo del título */
+}
+
+.apuesta p {
+  font-size: 16px; /* Tamaño de fuente para el texto */
+}
+
+
+article.flex2{
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: center;
+  justify-content: space-between;
+}
+#rojo{
+  background-color: rgb(240, 85, 85);
+}
+#verde{
+  background-color: rgb(33, 206, 33);
+  color: beige;
+}
+#gris{
+  background-color: rgb(187, 183, 183);
+}
+</style>
+
                 `;
                 mostrar.appendChild(apuestaElement);
             });
+
             calcularInfo(apuestas);  
         } else {
             mostrar.innerHTML = '<p>No hay apuestas disponibles.</p>';
         }
-        } catch (error) {
-            console.error('Error obteniendo las apuestas:', error);
-            return [];
-        }
+    } catch (error) {
+        console.error('Error obteniendo las apuestas:', error);
     }
+}
+
+function calcularGanancia(momio, cantidad_apostada, resultado) {
+    let ganancia = 0;
+    if (resultado === 'ganada') {
+        if (momio > 0) {
+            ganancia = cantidad_apostada * (momio / 100);
+        } else {
+            ganancia = cantidad_apostada * (100 / Math.abs(momio));
+        }
+        ganancia += cantidad_apostada;  // Añadimos la cantidad apostada
+    } else if (resultado === 'perdida') {
+        ganancia = 0;
+    } else if (resultado === 'push') {
+        ganancia = cantidad_apostada;  // En caso de empate, la ganancia es la cantidad apostada
+    }
+    return Number(ganancia).toFixed(2);
+}
+
+function obtenerColor(resultado) {
+    if (resultado === 'ganada') {
+        return 'verde';
+    } else if (resultado === 'perdida') {
+        return 'rojo';
+    } else {
+        return 'gris';
+    }
+}
+
     async function handleFiltrar() {
     apuestas = await filtrarApuestas();
     }  
@@ -150,7 +254,9 @@ let apuestas = [];
         }else if (apuesta.resultado==='push'){
             conteo_push++;
         }
+        
     });
+        ganancia_total=Number(ganancia_total).toFixed(2);
         mostrarGanancia.innerHTML=`Ganancia total = ${ganancia_total}`;
         mostrarGanadas.innerHTML=`Total Ganadas = ${conteo_ganadas}`;
         mostrarPerdidas.innerHTML=`Total Perdidas = ${conteo_perdidas}`;

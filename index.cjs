@@ -8,7 +8,7 @@ const bodyParser = require('body-parser');
 const pool = new Pool({
   user: 'postgres',
   host: 'localhost',
-  password: 'BD27-mVp+',
+  password: '',
   database: 'prueba'
 });
 
@@ -97,11 +97,11 @@ app.post('/login', async (req, res) => {
   
   
   app.post('/apuesta', async (req, res) => {
-    const { usuario, liga, FechaApuesta, Evento, DescripcionApuesta, TipoDeLaApuesta, Momio, Cantidad, resultado, parlayId } = req.body;
+    const { usuario, liga, FechaApuesta, Evento, DescripcionApuesta, TipoApuesta, Momio, Cantidad, resultado, parlayId } = req.body;
     try {
         const texto = `INSERT INTO apuesta(usuario_id, liga_id, fecha, evento, descripcion_apuesta, tipo_apuesta, momio, cantidad_apostada, resultado, parlay_id)
                         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`;
-        const valores = [usuario, liga, FechaApuesta, Evento, DescripcionApuesta, TipoDeLaApuesta, Momio, Cantidad, resultado, parlayId || null];
+        const valores = [usuario, liga, FechaApuesta, Evento, DescripcionApuesta, TipoApuesta, Momio, Cantidad, resultado, parlayId || null];
         await pool.query(texto, valores);
         res.status(201).json({ success: true });
     } catch (error) {

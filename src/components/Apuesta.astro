@@ -11,20 +11,26 @@ interface Props {
 const { fecha, evento, descripcion, momio, cantidad_apostada, resultado } = Astro.props;
 
 let ganancia: number;
+let color:string;
 if (resultado === 'ganada') {
+  color='verde';
   if(momio>0)
     ganancia = cantidad_apostada * (momio / 100) + cantidad_apostada;
   else
   ganancia = cantidad_apostada * (100 / Math.abs(momio)) + cantidad_apostada;
 } else if (resultado === 'perdida') {
+  color='rojo';
   ganancia = 0;
 } else if (resultado === 'push') {
+  color='gris';
   ganancia = cantidad_apostada;
 }
 ---
 
 <div class="apuesta">
-  <h2>Detalle de Apuesta</h2>
+  <div id={color}>
+    <h2>Detalle de Apuesta</h2>
+  </div>
   <article>
     <p> Evento:  {evento}</p>
   </article>
@@ -34,7 +40,7 @@ if (resultado === 'ganada') {
   </article>
   <article class="flex2">
     <p>Fecha:  {fecha}</p>
-    <p> Resultado:  {resultado}</p>
+    <p> {resultado}</p>
   </article>
   <article class="flex2" id="dinero">
     <p> Cantidad Apostada:  {cantidad_apostada}</p>
@@ -44,31 +50,24 @@ if (resultado === 'ganada') {
 
 <style>
 .apuesta {
-  background-color: #f9f9f9; /* Fondo claro para un look moderno */
-  border-radius: 8px; /* Bordes redondeados */
+  background-color: #dce2a7; /* Fondo claro para un look moderno */
+  border-radius: 25px; /* Bordes redondeados */
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Sombra sutil */
   padding: 20px; /* Espaciado interno */
   max-width: 400px; /* Ancho máximo */
   margin: 20px auto; /* Centrar y espaciado externo */
-  font-family: 'Arial', sans-serif; /* Fuente limpia */
   color: #333; /* Color de texto oscuro */
 }
 
 .apuesta h2 {
   font-size: 24px; /* Tamaño de fuente más grande para el título */
   margin-bottom: 15px; /* Espaciado debajo del título */
-  color: #007BFF; /* Color del título */
 }
 
 .apuesta p {
   font-size: 16px; /* Tamaño de fuente para el texto */
-  margin-bottom: 10px; /* Espaciado debajo de cada párrafo */
-  line-height: 1.6; /* Altura de línea para mejor legibilidad */
 }
 
-.apuesta p strong {
-  color: #007BFF; /* Resalta elementos clave */
-}
 
 article.flex2{
   display: flex;
@@ -77,5 +76,14 @@ article.flex2{
   justify-content: center;
   justify-content: space-between;
 }
-
+#rojo{
+  background-color: rgb(240, 85, 85);
+}
+#verde{
+  background-color: rgb(33, 206, 33);
+  color: beige;
+}
+#gris{
+  background-color: rgb(187, 183, 183);
+}
 </style>

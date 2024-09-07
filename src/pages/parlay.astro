@@ -10,190 +10,133 @@ import BotonSubmit from "../components/BotonSubmit.astro"
     <FormLabelRequired tipo="text" id="cantidad" nombre="cantidad" descripcion="Cantidad"/>
 
     <BotonSubmit typeButton="button" color="verde" title="registrar parlay" />
-    <form id="parlay-form" class="form-parlay">
-        Form
-        <div id="bet-forms">
-            <!-- Initial Bet Form -->
-            <div class="bet-form" data-index="1">
-                <label for="Deporte1">Deporte</label>
-                <input type="text" id="Deporte1" name="EleccionDeporte1" required>
-
-                <label for="Fecha1">Fecha de la Apuesta</label>
-                <input type="date" id="Fecha1" name="FechaApuesta1" required>
-
-                <label for="Evento1">Nombre de la Apuesta</label>
-                <input type="text" id="Evento" name="Evento" required>
-
-                <label for="DescripcionApuesta1">Nombre de la Apuesta</label>
-                <input type="text" id="DescripcionApuesta1" name="DescripcionApuesta1" required>
-
-                <label for="TipoApuesta1">Tipo de la Apuesta</label>
-                <input type="text" id="TipoApuesta1" name="TipoDeLaApuesta1" required>
-
-                <label for="resultado1">Resultado:</label>
-                <div class="checkbox">
-                    <input type="checkbox" id="ganada1" name="resultado1" value="ganada">
-                    <label for="ganada1">Ganada</label>
-                    <input type="checkbox" id="perdida1" name="resultado1" value="perdida">
-                    <label for="perdida1">Perdida</label>
-                    <input type="checkbox" id="push1" name="resultado1" value="push">
-                    <label for="push1">Push</label>
-                </div>
-            </div>
+    <form class="form-apuesta" id="bet-forms">
+        <div id="separador-deportes">
+            <article>
+            <label for="deportes">Escoge un deporte:</label>
+            <select id="lista-deportes">
+                <option value="0">Seleccione un Deporte</option>
+            </select>
+            </article>
+            <article>
+                <label for="ligas">Escoge una liga:</label>
+                <select id="lista-ligas"></select>
+            </article>
         </div>
+
+
+
+
+        <FormLabelRequired tipo="date" id="Fecha" nombre="FechaApuesta" descripcion="Fecha de la Apuesta"/>
+        <FormLabelRequired tipo="text" id="Evento" nombre="Evento" descripcion="Evento apostado"/>
+        <FormLabelRequired tipo="text" id="DescripcionApuesta" nombre="DescripcionApuesta" descripcion="Descripcion de la Apuesta"/>
+        <FormLabelRequired tipo="text" id="TipoApuesta" nombre="TipoApuesta" descripcion="Tipo de la Apuesta"/>
+        <FormLabelRequired tipo="text" id="Momio" nombre="Momio" descripcion="Momio"/>
+        <FormLabelRequired tipo="text" id="Cantidad" nombre="Cantidad" descripcion="Cantidad"/>
+        
+        <label for="resultado">Resultado:</label>
+        <div class="checkbox-group">
+            <input type="checkbox" id="ganada" name="resultado" value="ganada">
+            <label for="ganada">Ganada</label>
+            <input type="checkbox" id="perdida" name="resultado" value="perdida">
+            <label for="perdida">Perdida</label>
+            <input type="checkbox" id="push" name="resultado" value="push">
+            <label for="push">Push</label>
+        </div>
+        
         <button type="button" id="add-bet-button" class="add-button">Agregar Apuesta</button>
-        <button type="submit" class="submit-button">Guardar Parlay</button>
+        
     </form>
     <Boton href="menu" title="regresar" color="verde" />
+
+    <p id="depoid"></p>
 </Layout>
 
-<script>
-    document.getElementById('add-bet-button')?.addEventListener('click', function() {
-        const betForms = document.getElementById('bet-forms');
-        if (!betForms) return;
-
-        const betCount = betForms.getElementsByClassName('bet-form').length + 1;
-        const betForm = document.createElement('div');
-        betForm.classList.add('bet-form');
-        betForm.innerHTML = `
-            <div id="bet-forms">
-            <!-- Initial Bet Form -->
-            <div class="bet-form" data-index="1">
-                <label for="Deporte1">Deporte</label>
-                <input type="text" id="Deporte1" name="EleccionDeporte1" required>
-
-                <label for="Fecha1">Fecha de la Apuesta</label>
-                <input type="date" id="Fecha1" name="FechaApuesta1" required>
-
-                <label for="Evento1">Nombre de la Apuesta</label>
-                <input type="text" id="Evento" name="Evento" required>
-
-                <label for="DescripcionApuesta1">Nombre de la Apuesta</label>
-                <input type="text" id="DescripcionApuesta1" name="DescripcionApuesta1" required>
-
-                <label for="TipoApuesta1">Tipo de la Apuesta</label>
-                <input type="text" id="TipoApuesta1" name="TipoDeLaApuesta1" required>
-
-                <label for="resultado1">Resultado:</label>
-                <div class="checkbox">
-                    <input type="checkbox" id="ganada1" name="resultado1" value="ganada">
-                    <label for="ganada1">Ganada</label>
-                    <input type="checkbox" id="perdida1" name="resultado1" value="perdida">
-                    <label for="perdida1">Perdida</label>
-                    <input type="checkbox" id="push1" name="resultado1" value="push">
-                    <label for="push1">Push</label>
-                </div>
-            </div>
-        </div>
-            <style>
-            .form-parlay {
-                display: flex;
-                flex-direction: column;
-                width: 50%;
-                margin: 0 auto;
-                border-radius: 8px;
-                background-color: var(--bg-gray);
-                padding: 30px;
-                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            }
-            .bet-form {
-                margin-bottom: 20px;
-                padding-bottom: 20px;
-                border-bottom: 1px solid var(--gray-light);
-            }
-            .bet-form label {
-                display: block;
-                margin-bottom: 5px;
-                font-weight: bold;
-            }
-            .bet-form input[type="text"],
-            .bet-form input[type="date"] {
-                width: 100%;
-                padding: 8px;
-                margin-bottom: 15px;
-                border: 1px solid var(--gray-light);
-                border-radius: 4px;
-            }
-            .checkbox {
-                display: flex;
-                gap: 1rem;
-                align-items: center;
-                margin-bottom: 15px;
-            }
-
-            .checkbox input[type="checkbox"] {
-                margin-right: 0.5rem;
-            }
-
-            </style>
-        `;
-        betForms.appendChild(betForm);
-    });
-</script>
 
 <style>
-.form-parlay {
-    display: flex;
-    flex-direction: column;
-    width: 50%;
-    margin: 0 auto;
-    border-radius: 8px;
-    background-color: var(--bg-gray);
-    padding: 30px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-.bet-form {
-    margin-bottom: 20px;
-    padding-bottom: 20px;
-    border-bottom: 1px solid var(--gray-light);
-}
-
-.bet-form label {
-    display: block;
-    margin-bottom: 5px;
-    font-weight: bold;
-}
-
-.bet-form input[type="text"],
-.bet-form input[type="date"] {
-    width: 100%;
-    padding: 8px;
-    margin-bottom: 15px;
-    border: 1px solid var(--gray-light);
-    border-radius: 4px;
-}
-
-.checkbox {
-    display: flex;
-    gap: 1rem;
-    align-items: center;
-    margin-bottom: 15px;
-}
-
-.checkbox input[type="checkbox"] {
-    margin-right: 0.5rem;
-}
-
-.add-button,
-.submit-button {
-    background-color: var(--primary-green);
-    color: white;
-    padding: 0.75rem;
-    border: none;
-    border-radius: 4px;
-    font-size: 1rem;
-    cursor: pointer;
-    margin-top: 20px;
-}
-
-.add-button:hover,
-.submit-button:hover {
-    background-color: var(--green-dark);
-}
+    .form-apuesta {
+        display: flex;
+        flex-direction: column;
+        width: 50%;
+        margin: 0 auto;
+        border-radius: 8px;
+        background-color: var(--bg-gray);
+        padding: 30px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    .checkbox-group {
+        display: flex;
+        gap: 1.5rem;
+        align-items: center;
+    }
+    
+    .checkbox-group label {
+        margin-right: 1rem;
+    }
+    
+    #separador-deportes {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+    }
+    
+    #datosFormulario {
+        margin-top: 20px;
+    }
 </style>
-
 <script>
+   document.addEventListener('DOMContentLoaded', init);
+
+// Initial Setup Function
+async function init() {
+    const userId = localStorage.getItem('id_usuario');
+    if (userId) {
+        MostrarIdUsuario(userId);
+        await cargarDeportes(userId);
+        setupEventListeners();
+    } else {
+        console.error('ID de usuario no encontrado.');
+    }
+}
+
+// Display the User ID
+function MostrarIdUsuario(userId) {
+    const userIdElemento = document.getElementById('user');
+    if(userIdElemento)
+    userIdElemento.textContent = `Usuario ID: ${userId}`;
+}
+
+function setupEventListeners() {
+    document.getElementById('lista-deportes').addEventListener('change', actualizarLigas);
+    document.querySelectorAll('input[name="resultado"]').forEach(checkbox => {
+        checkbox.addEventListener('change', handleCheckboxChange);
+    });
+    document.getElementById('add-bet-button').addEventListener('click', agregarMasApuestas);
+    
+    // Attach event listeners to dynamically added forms
+    document.querySelectorAll('.bet-form .lista-deportes').forEach(select => {
+        select.addEventListener('change', actualizarLigas);
+    });
+    document.querySelectorAll('.bet-form .checkbox-group input').forEach(checkbox => {
+        checkbox.addEventListener('change', handleCheckboxChange);
+    });
+}
+
+function getSelectedResultados() {
+        return Array.from(document.querySelectorAll('input[name="resultado"]:checked'))
+                    .map(checkbox => checkbox.value)
+                    .join(',');
+    }
+
+    function handleCheckboxChange() {
+        document.querySelectorAll('input[name="resultado"]').forEach(box => {
+            if (box !== this) box.checked = false;
+        });
+    }
+
+
     async function handleSubmit(event) {
     event.preventDefault();
 
@@ -247,4 +190,96 @@ import BotonSubmit from "../components/BotonSubmit.astro"
     }
 }
 
+
+async function cargarDeportes(userId) {
+        const listaDeportes = document.getElementById('lista-deportes');
+        try {
+            const response = await fetch(`http://localhost:4322/deportes/${userId}`);
+            const deportes = await response.json();
+            popularDeportes(listaDeportes, deportes);
+        } catch (error) {
+            console.error('Error obteniendo los deportes:', error);
+        }
+    }
+    function popularDeportes(selectElement, deportes) {
+        selectElement.innerHTML = '<option value="0">Seleccione un Deporte</option>';
+        deportes.forEach(deporte => {
+            const option = document.createElement('option');
+            option.value = deporte.id_deporte;
+            option.textContent = deporte.nombre_deporte;
+            selectElement.appendChild(option);
+        });
+    }
+    async function actualizarLigas() {
+        const selectedDeporteId = document.getElementById('lista-deportes').value;
+        const listaLigas = document.getElementById('lista-ligas');
+        const userId = localStorage.getItem('id_usuario');
+
+        if (selectedDeporteId) {
+            console.log(selectedDeporteId);
+            document.getElementById('depoid').textContent = `ID Deporte Seleccionado: ${selectedDeporteId}`;
+            try {
+                const response = await fetch(`http://localhost:4322/ligas/${userId}/${selectedDeporteId}`);
+                const ligas = await response.json();
+                popularLigas(listaLigas, ligas);
+            } catch (error) {
+                console.error('Error obteniendo las ligas:', error);
+            }
+        }
+    }
+
+    // Populate Ligas in Select
+    function popularLigas(selectElement, ligas) {
+        selectElement.innerHTML = '<option value="0">Seleccione una liga</option>';
+        ligas.forEach(liga => {
+            const option = document.createElement('option');
+            option.value = liga.id_liga;
+            option.textContent = liga.nombre_liga;
+            selectElement.appendChild(option);
+        });
+    }
+
+
+    function agregarMasApuestas() {
+    const betForms = document.getElementById('bet-forms');
+    if (!betForms) return;
+
+    const betForm = document.createElement('div');
+    betForm.classList.add('bet-form');
+    betForm.innerHTML = `
+        <div id="separador-deportes">
+            <article>
+                <label for="deportes">Escoge un deporte:</label>
+                <select class="lista-deportes">
+                    <option value="0">Seleccione un Deporte</option>
+                </select>
+            </article>
+            <article>
+                <label for="ligas">Escoge una liga:</label>
+                <select class="lista-ligas"></select>
+            </article>
+        </div>
+        <FormLabelRequired tipo="date" id="Fecha" nombre="FechaApuesta" descripcion="Fecha de la Apuesta"/>
+        <FormLabelRequired tipo="text" id="Evento" nombre="Evento" descripcion="Evento apostado"/>
+        <FormLabelRequired tipo="text" id="DescripcionApuesta" nombre="DescripcionApuesta" descripcion="Descripcion de la Apuesta"/>
+        <FormLabelRequired tipo="text" id="TipoApuesta" nombre="TipoApuesta" descripcion="Tipo de la Apuesta"/>
+        <FormLabelRequired tipo="text" id="Momio" nombre="Momio" descripcion="Momio"/>
+        <FormLabelRequired tipo="text" id="Cantidad" nombre="Cantidad" descripcion="Cantidad"/>
+        <label for="resultado">Resultado:</label>
+        <div class="checkbox-group">
+            <input type="checkbox" name="resultado" value="ganada">
+            <label>Ganada</label>
+            <input type="checkbox" name="resultado" value="perdida">
+            <label>Perdida</label>
+            <input type="checkbox" name="resultado" value="push">
+            <label>Push</label>
+        </div>
+    `;
+    betForms.appendChild(betForm);
+    
+    // Re-setup event listeners for newly added forms
+    setupEventListeners();
+    }
 </script>
+
+

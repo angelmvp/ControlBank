@@ -30,7 +30,7 @@ import BotonSubmit from "../components/BotonSubmit.astro"
         <FormLabelRequired tipo="date" id="Fecha" nombre="FechaApuesta" descripcion="Fecha de la Apuesta"/>
         <FormLabelRequired tipo="text" id="Evento" nombre="Evento" descripcion="Evento apostado"/>
         <FormLabelRequired tipo="text" id="DescripcionApuesta" nombre="DescripcionApuesta" descripcion="Descripcion de la Apuesta"/>
-        <FormLabelRequired tipo="text" id="TipoApuesta" nombre="TipoDeLaApuesta" descripcion="Tipo de la Apuesta"/>
+        <FormLabelRequired tipo="text" id="TipoApuesta" nombre="TipoApuesta" descripcion="Tipo de la Apuesta"/>
         <FormLabelRequired tipo="text" id="Momio" nombre="Momio" descripcion="Momio"/>
         <FormLabelRequired tipo="text" id="Cantidad" nombre="Cantidad" descripcion="Cantidad"/>
         
@@ -47,7 +47,6 @@ import BotonSubmit from "../components/BotonSubmit.astro"
     </form>
 
     <div id="datosFormulario"></div>
-    <p id="user"></p>
     <p id="depoid"></p>
     <Boton href="menu" title="regresar" color="verde" />
 
@@ -170,27 +169,10 @@ import BotonSubmit from "../components/BotonSubmit.astro"
     // Display the User ID
     function MostrarIdUsuario(userId) {
         const userIdElemento = document.getElementById('user');
+        if(userIdElemento)
         userIdElemento.textContent = `Usuario ID: ${userId}`;
     }
-    async function cargarDeportes(userId) {
-        const listaDeportes = document.getElementById('lista-deportes');
-        try {
-            const response = await fetch(`http://localhost:4322/deportes/${userId}`);
-            const deportes = await response.json();
-            popularDeportes(listaDeportes, deportes);
-        } catch (error) {
-            console.error('Error obteniendo los deportes:', error);
-        }
-    }
-    function popularDeportes(selectElement, deportes) {
-        selectElement.innerHTML = '<option value="0">Seleccione un Deporte</option>';
-        deportes.forEach(deporte => {
-            const option = document.createElement('option');
-            option.value = deporte.id_deporte;
-            option.textContent = deporte.nombre_deporte;
-            selectElement.appendChild(option);
-        });
-    }
+
     function setupEventListeners() {
         document.getElementById('lista-deportes').addEventListener('change', actualizarLigas);
         document.getElementById('form-apuesta').addEventListener('submit', handleSubmit);
@@ -198,6 +180,7 @@ import BotonSubmit from "../components/BotonSubmit.astro"
             checkbox.addEventListener('change', handleCheckboxChange);
         });
         setupModalEventListeners();
+        
     }
     async function handleSubmit(event) {
         event.preventDefault();
@@ -232,7 +215,7 @@ import BotonSubmit from "../components/BotonSubmit.astro"
         const evento = document.getElementById('Evento').value.toUpperCase();
         const descripcionApuesta = document.getElementById('DescripcionApuesta').value.toUpperCase();
         const tipoApuesta = document.getElementById('TipoApuesta').value.toUpperCase();
-
+        
         const formData = new FormData(form);
             formData.set('Evento', evento);
             formData.set('DescripcionApuesta', descripcionApuesta);
@@ -242,7 +225,7 @@ import BotonSubmit from "../components/BotonSubmit.astro"
             formData.append('resultado', getSelectedResultados());
 
         const data = Object.fromEntries(formData.entries());
-
+        console.log(data);
         try {
             const response = await fetch('http://localhost:4322/apuesta', {
                 method: 'POST',
@@ -275,6 +258,25 @@ import BotonSubmit from "../components/BotonSubmit.astro"
         });
     }
 
+    async function cargarDeportes(userId) {
+        const listaDeportes = document.getElementById('lista-deportes');
+        try {
+            const response = await fetch(`http://localhost:4322/deportes/${userId}`);
+            const deportes = await response.json();
+            popularDeportes(listaDeportes, deportes);
+        } catch (error) {
+            console.error('Error obteniendo los deportes:', error);
+        }
+    }
+    function popularDeportes(selectElement, deportes) {
+        selectElement.innerHTML = '<option value="0">Seleccione un Deporte</option>';
+        deportes.forEach(deporte => {
+            const option = document.createElement('option');
+            option.value = deporte.id_deporte;
+            option.textContent = deporte.nombre_deporte;
+            selectElement.appendChild(option);
+        });
+    }
     async function actualizarLigas() {
         const selectedDeporteId = document.getElementById('lista-deportes').value;
         const listaLigas = document.getElementById('lista-ligas');
@@ -305,13 +307,14 @@ import BotonSubmit from "../components/BotonSubmit.astro"
     }
 
     // Setup Event Listeners for Modal
-    function cargar() {
+    function setupModalEventListeners() {
         const modal = document.getElementById('modal');
         const nuevodeporte = document.getElementById('nueva-lista-deportes');
         const nuevaliga = document.getElementById('nueva-lista-ligas');
-
+        console.log("registro");
         document.getElementById('open-modal-button').addEventListener('click', async () => {
             modal.classList.add('active');
+            
             await cargarDeportesModal(nuevodeporte);
         });
 
@@ -325,7 +328,7 @@ import BotonSubmit from "../components/BotonSubmit.astro"
 
         nuevodeporte.addEventListener('change', () => actualizarLigasModal(nuevodeporte.value, nuevaliga));
 
-        document.querySelector('.modal-footer button[type="submit"]').addEventListener('click', handleSaveNewLiga);
+        document.querySelector('.modal-footer button[type="submit"]').addEventListener('click', handleNuevaLiga);
     }
 
     async function cargarDeportesModal(selectElement) {
